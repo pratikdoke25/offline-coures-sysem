@@ -34,7 +34,7 @@ const LoginPage = () => {
       // Send login request to the backend with proper headers
       const response = await axios.post(
         'http://localhost:3000/api/teacher/login',
-        formData,
+        formData, // Form data (email, password)
         {
           headers: {
             'Content-Type': 'application/json', // Ensure the content type is correct
@@ -43,9 +43,9 @@ const LoginPage = () => {
       );
 
       // Check if login was successful
-      if (response.data.token) {
-        // Store the token in local storage or session storage
-        localStorage.setItem('token', response.data.token);
+      if (response.data.message === 'Login successful') {
+        // Store user data in localStorage
+        localStorage.setItem('user', JSON.stringify(response.data.user));
 
         // Show success toast
         toast.success('Login successful!', { position: 'top-center' });
@@ -59,8 +59,8 @@ const LoginPage = () => {
         toast.error('Login failed. Try again.', { position: 'top-center' });
       }
     } catch (error) {
-      console.error('Login error:', error); // Log error for debugging
-      setLoginError('An error occurred. Please try again.');
+      console.error('Login error:', error.response || error); // Log error for debugging
+      setLoginError(error.response?.data?.message || 'An error occurred. Please try again.');
       toast.error('An error occurred. Please try again.', { position: 'top-center' });
     } finally {
       setIsLoading(false);
@@ -88,9 +88,7 @@ const LoginPage = () => {
               placeholder="Email"
               value={formData.email}
               onChange={handleChange}
-              className={`w-full pl-10 py-2 border rounded ${
-                errors.email ? 'border-red-500' : 'border-gray-300'
-              }`}
+              className={`w-full pl-10 py-2 border rounded ${errors.email ? 'border-red-500' : 'border-gray-300'}`}
             />
             {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
           </div>
@@ -104,9 +102,7 @@ const LoginPage = () => {
               placeholder="Password"
               value={formData.password}
               onChange={handleChange}
-              className={`w-full pl-10 pr-10 py-2 border rounded ${
-                errors.password ? 'border-red-500' : 'border-gray-300'
-              }`}
+              className={`w-full pl-10 pr-10 py-2 border rounded ${errors.password ? 'border-red-500' : 'border-gray-300'}`}
             />
             <button
               type="button"

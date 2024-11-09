@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
 
-// Create User Schema
+// Create Teacher Schema
 const teacherSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   fullName: { type: String, required: true },
@@ -9,17 +8,10 @@ const teacherSchema = new mongoose.Schema({
   phone: { type: String, required: true },
 }, { timestamps: true });
 
-// Password Hashing Middleware
-teacherSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) return next();
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
-  next();
-});
-
 // Compare password method
-teacherSchema.methods.matchPassword = async function (password) {
-  return await bcrypt.compare(password, this.password);
+// Directly compares plain text passwords (no hashing)
+teacherSchema.methods.matchPassword = function (password) {
+  return password === this.password;
 };
 
 module.exports = mongoose.model('Teacher', teacherSchema);

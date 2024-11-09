@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
+import { useNavigate } from 'react-router-dom';
 
 const LoginPage = () => {
   const [formData, setFormData] = useState({
@@ -13,7 +13,7 @@ const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loginError, setLoginError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate(); // Initialize useNavigate
+  const navigate = useNavigate();
 
   const validateForm = () => {
     const newErrors = {};
@@ -30,17 +30,27 @@ const LoginPage = () => {
     setIsLoading(true);
     setLoginError('');
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate login request
-      console.log('Logged in:', formData);
-      toast.success('Login successful!', { position: 'top-center' });
+      const response = await fetch('http://localhost:3000/api/users/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
 
-      // Add a delay before redirecting to the dashboard
-      setTimeout(() => {
-        navigate('/student-dashboard'); // Redirect to /student-dashboard after toast
-      }, 2000); // Wait 2 seconds before redirecting (adjust as needed)
-    } catch {
-      setLoginError('Failed to log in. Try again.');
-      toast.error('Login failed. Try again.', { position: 'top-center' });
+      const data = await response.json();
+      if (response.ok) {
+        toast.success('Login successful!', { position: 'top-center' });
+        setTimeout(() => {
+          navigate('/student-dashboard');
+        }, 2000);
+      } else {
+        setLoginError(data.message || 'Failed to log in. Try again.');
+        toast.error(data.message || 'Login failed. Try again.', { position: 'top-center' });
+      }
+    } catch (error) {
+      setLoginError('Server error. Try again later.');
+      toast.error('Server error. Try again later.', { position: 'top-center' });
     } finally {
       setIsLoading(false);
     }

@@ -1,8 +1,7 @@
-const User = require('../model/Teacher');
-const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const Teacher = require('../model/Teacher');
 
-// Register a new user
+// Register a new teacher
 const registerTeacher = async (req, res) => {
   const { email, fullName, password, confirmPassword, phone } = req.body;
 
@@ -17,67 +16,66 @@ const registerTeacher = async (req, res) => {
   }
 
   // Check if email already exists
-  const existingUser = await User.findOne({ email });
+  const existingUser = await Teacher.findOne({ email });
   if (existingUser) {
     return res.status(400).json({ message: 'Email is already taken.' });
   }
 
-  // Hash password before saving
-  const hashedPassword = await bcrypt.hash(password, 10);
-
-  const newUser = new User({
+  // Create a new teacher with hashed password
+  const newTeacher = new Teacher({
     email,
     fullName,
-    password: hashedPassword,
+    password,
     phone,
   });
 
   try {
-    await newUser.save();
+    await newTeacher.save();
     res.status(201).json({ message: 'Teacher registered successfully' });
   } catch (err) {
     res.status(500).json({ message: 'Server error. Please try again later.' });
   }
 };
 
-
-
+// Login teacher
 const loginTeacher = async (req, res) => {
-    const { email, password } = req.body;
-  
-    // Validate request data
-    if (!email || !password) {
-      return res.status(400).json({ message: 'Please provide both email and password.' });
+  const { email, password } = req.body;
+
+  // Validate request data
+  if (!email || !password) {
+    return res.status(400).json({ message: 'Please provide both email and password.' });
+  }
+
+  try {
+    // Find the teacher by email
+    const teacher = await Teacher.findOne({ email });  // Use correct model `Teacher`
+
+    // If teacher doesn't exist
+    if (!teacher) {
+      return res.status(401).json({ message: 'Invalid email or password.' });
     }
-  
-    try {
-      // Find the user by email
-      const user = await User.findOne({ email });
-  
-      // If user doesn't exist
-      if (!user) {
-        return res.status(401).json({ message: 'Invalid email or password.' });
-      }
-  
-      // Compare the password
-      const isMatch = await bcrypt.compare(password, user.password);
-  
-      // If passwords don't match
-      if (!isMatch) {
-        return res.status(401).json({ message: 'Invalid email or password.' });
-      }
-  
-      // Generate JWT token
-      const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-  
-      // Send success response with token
-      res.status(200).json({
-        message: 'Login successful',
-        token,
-      });
-    } catch (error) {
-      res.status(500).json({ message: 'Server error, please try again later.' });
+
+    // Compare the password using matchPassword method
+    const isMatch = await teacher.matchPassword(password);
+
+    // If passwords don't match
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Invalid email or password.' });
     }
-  };
-  
-  module.exports = { loginTeacher,registerTeacher };
+
+    // Send success response with teacher data
+    res.status(200).json({
+      message: 'Login successful',
+      user: {
+        id: teacher._id,
+        email: teacher.email,
+        name: teacher.fullName,  // Correct property
+      },
+    });
+  } catch (error) {
+    console.error(error);  // Log error for debugging
+    res.status(500).json({ message: 'Server error, please try again later.' });
+  }
+};
+
+module.exports = { loginTeacher, registerTeacher };
