@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+/* Global Styles */
+body {
+    font-family: 'Inter', sans-serif; /* Choose a clean font */
+    background-color: #f3f4f6; /* Background color */
+  }
+  
+  /* Button hover effect */
+  button:disabled {
+    background-color: #d1d5db; /* Lighter gray when disabled */
+    cursor: not-allowed;
+  }
+  
