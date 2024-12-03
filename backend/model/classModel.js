@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 
+// Define the Course schema
 const CourseSchema = new mongoose.Schema({
   courseName: {
     type: String,
@@ -17,10 +18,10 @@ const CourseSchema = new mongoose.Schema({
   },
   isEnrolled: {
     type: Boolean,
-    default: false,
+    default: false, // Defaults to false if not provided
   },
   skills: {
-    type: [String],
+    type: [String], // Array of strings
     default: [],
   },
   rating: {
@@ -39,8 +40,17 @@ const CourseSchema = new mongoose.Schema({
     required: true,
     min: 0,
   },
+  teacherId: {
+    type: mongoose.Schema.Types.ObjectId, // MongoDB user ID
+    required: true,
+    ref: 'User', // Reference to the User model
+  },
+  teacherEmail: {
+    type: String,
+    required: true, // Email of the instructor
+  },
 }, {
-  timestamps: true,
+  timestamps: true, // Automatically includes createdAt and updatedAt fields
 });
 
 module.exports = mongoose.model('Course', CourseSchema);

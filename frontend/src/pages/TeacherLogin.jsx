@@ -46,6 +46,7 @@ const LoginPage = () => {
       if (response.data.message === 'Login successful') {
         // Store user data in sessionStorage
         sessionStorage.setItem('teacherEmail', response.data.user.email);
+        sessionStorage.setItem('teacherid', response.data.user.id);
         sessionStorage.setItem('teacherData', JSON.stringify(response.data.user));
 
         // Show success toast
@@ -58,6 +59,7 @@ const LoginPage = () => {
 
         // Log user data stored in sessionStorage to console
         console.log('User email stored in sessionStorage:', sessionStorage.getItem('teacherEmail'));
+        console.log('User id stored in sessionStorage:', sessionStorage.getItem('teacherid'));
         console.log('User data stored in sessionStorage:', JSON.parse(sessionStorage.getItem('teacherData')));
       } else {
         setLoginError('Failed to log in. Please try again.');

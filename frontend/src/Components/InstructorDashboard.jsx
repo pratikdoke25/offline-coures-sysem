@@ -31,45 +31,33 @@ const InstructorDashboard = () => {
     description: '',
     skills: [],
     price: '',
-    contactNumber: '', // New field for contact number
-    instructorName: '' // New field for instructor's name
+    contactNumber: '',
+    instructorName: ''
   });
 
   // Effect to fetch teacher data from sessionStorage
   useEffect(() => {
-    // Retrieve teacher data from sessionStorage
-    const teacherData = JSON.parse(sessionStorage.getItem('teacherData')) || {}; // Fetch from sessionStorage
-    const teacherId = teacherData.id || ''; // Default to empty string if not found
-    const teacherEmail = teacherData.email || ''; // Default to empty string if not found
+    const teacherData = JSON.parse(sessionStorage.getItem('teacherData')) || {};
+    console.log('Teacher Data Retrieved from Session:', teacherData);
 
-    // Check if teacher data exists, if not, prevent course addition
+    const teacherId = teacherData.id || '';
+    const teacherEmail = teacherData.email || '';
+
     if (!teacherId || !teacherEmail) {
       console.error('Teacher ID or email not found in session storage.');
-      return; // Optionally show a message to the user
+      return;
     }
 
-    setUserData({
-      id: teacherId,
-      name: teacherData.name,
-      email: teacherEmail
-    });
+    setUserData({ id: teacherId, email: teacherEmail });
   }, []);
 
   const handleSkillChange = (skill) => {
     setNewCourse(prev => {
       const currentSkills = prev.skills;
       if (currentSkills.includes(skill)) {
-        // Remove skill if already selected
-        return {
-          ...prev,
-          skills: currentSkills.filter(s => s !== skill)
-        };
+        return { ...prev, skills: currentSkills.filter(s => s !== skill) };
       } else {
-        // Add skill if not selected
-        return {
-          ...prev,
-          skills: [...currentSkills, skill]
-        };
+        return { ...prev, skills: [...currentSkills, skill] };
       }
     });
   };
@@ -77,43 +65,42 @@ const InstructorDashboard = () => {
   const handleAddCourse = async (e) => {
     e.preventDefault();
 
-    if (!userData) {
+    console.log('Current Input Data:', newCourse);
+
+    const storedUserData = JSON.parse(sessionStorage.getItem('teacherData'));
+    if (!storedUserData || !storedUserData.id || !storedUserData.email) {
       console.error('User data not found.');
-      return; // Optionally show an error message
+      return;
     }
 
-    // Prepare course data
     const courseData = {
       ...newCourse,
-      instructorId: userData.id,
-      instructorName: newCourse.instructorName, // Instructor's name from the form
-      contact: newCourse.contactNumber, // Contact number from the form
-      skills: newCourse.skills,
-      isEnrolled: true,
-      price: parseFloat(newCourse.price)
+      userId: storedUserData.id,
+      userEmail: storedUserData.email,
     };
+
+    console.log('Course Data to be Submitted:', courseData);
 
     try {
       const response = await fetch('http://localhost:3000/api/course/add', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(courseData)
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(courseData),
       });
 
       if (response.ok) {
         const addedCourse = await response.json();
-        setCourses([...courses, addedCourse]);
+        console.log('Response from Server:', addedCourse);
+
+        setCourses([...courses, addedCourse.data]);
         setIsAddCourseModalOpen(false);
-        // Reset form
         setNewCourse({
           courseName: '',
           description: '',
           skills: [],
           price: '',
-          contactNumber: '', // Reset contact number field
-          instructorName: '' // Reset instructor's name field
+          contactNumber: '',
+          instructorName: '',
         });
       } else {
         console.error('Failed to add course');
@@ -122,6 +109,7 @@ const InstructorDashboard = () => {
       console.error('Error adding course:', error);
     }
   };
+  
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
