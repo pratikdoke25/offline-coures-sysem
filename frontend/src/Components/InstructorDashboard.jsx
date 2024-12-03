@@ -22,7 +22,6 @@ const SKILLS_OPTIONS = [
 ];
 
 const InstructorDashboard = () => {
-  // State for courses and modal
   const [courses, setCourses] = useState([]);
   const [isAddCourseModalOpen, setIsAddCourseModalOpen] = useState(false);
   const [userData, setUserData] = useState(null);
@@ -37,21 +36,20 @@ const InstructorDashboard = () => {
     instructorName: ''
   });
 
-  // Effect to fetch teacher data from sessionStorage
   useEffect(() => {
     const teacherData = JSON.parse(sessionStorage.getItem('teacherData')) || {};
     const teacherId = teacherData.id || '';
-  
+    setUserData(teacherData);  // Ensure userData is set
+
     if (!teacherId) {
       setError('Teacher ID not found.');
       setIsLoading(false);
       return;
     }
-  
+
     fetch(`http://localhost:3000/api/course/courses/teacher/${teacherId}`)
       .then((response) => response.json())
       .then((data) => {
-        console.log('API Response:', data);
         if (data.success && Array.isArray(data.data)) {
           setCourses(data.data); // Use data.data for courses
           setError(null); // Clear any error
@@ -60,14 +58,13 @@ const InstructorDashboard = () => {
         }
       })
       .catch((error) => {
-        console.error('Fetch Error:', error);
         setError('Error fetching courses.');
       })
       .finally(() => {
         setIsLoading(false);
       });
   }, []);
-  
+
   if (isLoading) {
     return <div>Loading...</div>;
   }
@@ -75,6 +72,7 @@ const InstructorDashboard = () => {
   if (error) {
     return <div>Error: {error}</div>;
   }
+
   const handleSkillChange = (skill) => {
     setNewCourse(prev => {
       const currentSkills = prev.skills;
@@ -88,9 +86,6 @@ const InstructorDashboard = () => {
 
   const handleAddCourse = async (e) => {
     e.preventDefault();
-
-    console.log('Current Input Data:', newCourse);
-
     const storedUserData = JSON.parse(sessionStorage.getItem('teacherData'));
     if (!storedUserData || !storedUserData.id || !storedUserData.email) {
       console.error('User data not found.');
@@ -103,8 +98,6 @@ const InstructorDashboard = () => {
       userEmail: storedUserData.email,
     };
 
-    console.log('Course Data to be Submitted:', courseData);
-
     try {
       const response = await fetch('http://localhost:3000/api/course/add', {
         method: 'POST',
@@ -114,8 +107,6 @@ const InstructorDashboard = () => {
 
       if (response.ok) {
         const addedCourse = await response.json();
-        console.log('Response from Server:', addedCourse);
-
         setCourses([...courses, addedCourse.data]);
         setIsAddCourseModalOpen(false);
         setNewCourse({
@@ -133,16 +124,13 @@ const InstructorDashboard = () => {
       console.error('Error adding course:', error);
     }
   };
-  
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="container mx-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-gray-800">
-            Instructor Dashboard
-          </h1>
+          <h1 className="text-3xl font-bold text-gray-800">Instructor Dashboard</h1>
           {userData && (
             <button 
               className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors"
@@ -154,34 +142,35 @@ const InstructorDashboard = () => {
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-    {courses.length > 0 ? (
-      courses.map((course, index) => (
-        <div 
-          key={index} 
-          className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow"
-        >
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold">{course.courseName}</h2>
-            <div className="flex gap-2">
-              <button className="text-blue-500 hover:bg-blue-100 p-1 rounded">
-                Edit
-              </button>
-              <button className="text-red-500 hover:bg-red-100 p-1 rounded">
-                Delete
-              </button>
-            </div>
-          </div>
-          <div className="space-y-3">
-            <p className="text-gray-700">{course.description || 'No description provided'}</p>
-            <p className="text-gray-500">Contact: {course.contact || 'N/A'}</p>
-            <p className="text-gray-500">Instructor: {course.instructorName || 'N/A'}</p>
-          </div>
+          {courses.length > 0 ? (
+            courses.map((course, index) => (
+              <div 
+                key={index} 
+                className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow"
+              >
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-xl font-semibold">{course.courseName}</h2>
+                  <div className="flex gap-2">
+                    <button className="text-blue-500 hover:bg-blue-100 p-1 rounded">
+                      Edit
+                    </button>
+                    <button className="text-red-500 hover:bg-red-100 p-1 rounded">
+                      Delete
+                    </button>
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  <p className="text-gray-700">{course.description || 'No description provided'}</p>
+                  <p className="text-gray-500">Contact: {course.contact || 'N/A'}</p>
+                  <p className="text-gray-500">Instructor: {course.instructorName || 'N/A'}</p>
+                </div>
+              </div>
+            ))
+          ) : (
+            <p className="text-gray-700">No courses found for this instructor.</p>
+          )}
         </div>
-      ))
-    ) : (
-      <p className="text-gray-700">No courses found for this instructor.</p>
-    )}
-  </div>
+
         {/* Add Course Modal */}
         {isAddCourseModalOpen && userData && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -199,10 +188,7 @@ const InstructorDashboard = () => {
                   <input 
                     className="w-full px-3 py-2 border rounded-md"
                     value={newCourse.courseName}
-                    onChange={(e) => setNewCourse({
-                      ...newCourse, 
-                      courseName: e.target.value
-                    })}
+                    onChange={(e) => setNewCourse({ ...newCourse, courseName: e.target.value })}
                     required 
                   />
                 </div>
@@ -211,10 +197,7 @@ const InstructorDashboard = () => {
                   <textarea 
                     className="w-full px-3 py-2 border rounded-md"
                     value={newCourse.description}
-                    onChange={(e) => setNewCourse({
-                      ...newCourse, 
-                      description: e.target.value
-                    })}
+                    onChange={(e) => setNewCourse({ ...newCourse, description: e.target.value })}
                     required 
                   />
                 </div>
@@ -242,44 +225,32 @@ const InstructorDashboard = () => {
                   <input 
                     className="w-full px-3 py-2 border rounded-md"
                     value={newCourse.instructorName}
-                    onChange={(e) => setNewCourse({
-                      ...newCourse, 
-                      instructorName: e.target.value
-                    })}
+                    onChange={(e) => setNewCourse({ ...newCourse, instructorName: e.target.value })}
+                    required 
+                  />
+                </div>
+                <div>
+                  <label className="block mb-2">Price</label>
+                  <input 
+                    className="w-full px-3 py-2 border rounded-md"
+                    type="number"
+                    value={newCourse.price}
+                    onChange={(e) => setNewCourse({ ...newCourse, price: e.target.value })}
                     required 
                   />
                 </div>
                 <div>
                   <label className="block mb-2">Contact Number</label>
                   <input 
-                    type="tel"
                     className="w-full px-3 py-2 border rounded-md"
                     value={newCourse.contactNumber}
-                    onChange={(e) => setNewCourse({
-                      ...newCourse, 
-                      contactNumber: e.target.value
-                    })}
-                    required 
-                    pattern="\d{10}" // Ensure valid phone number
-                  />
-                </div>
-                <div>
-                  <label className="block mb-2">Price</label>
-                  <input 
-                    type="number"
-                    step="0.01"
-                    className="w-full px-3 py-2 border rounded-md"
-                    value={newCourse.price}
-                    onChange={(e) => setNewCourse({
-                      ...newCourse, 
-                      price: e.target.value
-                    })}
+                    onChange={(e) => setNewCourse({ ...newCourse, contactNumber: e.target.value })}
                     required 
                   />
                 </div>
                 <button 
-                  type="submit"
-                  className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition-colors"
+                  type="submit" 
+                  className="w-full bg-blue-500 text-white py-2 rounded-md mt-4"
                 >
                   Add Course
                 </button>

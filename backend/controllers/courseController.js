@@ -93,4 +93,40 @@ const getCoursesByTeacherId = async (req, res) => {
     });
   }
 };
-module.exports = { addCourse,getCoursesByTeacherId };
+//fetch all the details
+const getAllCourses = async (req, res) => {
+  try {
+    const courses = await Course.find(); // Fetch all courses from the database
+    res.status(200).json({ success: true, data: courses });
+  } catch (error) {
+    console.error('Error fetching courses:', error);
+    res.status(500).json({ success: false, message: 'Error fetching courses', error });
+  }
+};
+
+const getCourseById = async (req, res) => {
+  const { courseId } = req.params;
+
+  try {
+    // Find course by ID
+    const course = await Course.findById(courseId);
+    
+    if (!course) {
+      return res.status(404).json({ success: false, message: 'Course not found' });
+    }
+
+    // Return course data
+    return res.status(200).json({
+      success: true,
+      data: course
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Server error, please try again later'
+    });
+  }
+};
+
+
+module.exports = { addCourse,getCoursesByTeacherId ,getAllCourses,getCourseById};

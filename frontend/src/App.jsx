@@ -12,6 +12,7 @@ import StudentDashboard from './Components/StudentDashboard';
 import InstructorDashboard from './Components/InstructorDashboard';
 import AdminDashboard from './Auth/AdminDashboard';
 import TeacherDetails from './Profile/TeacherDetails'
+import CourseDetails from './Components/CourseDetails';
 function App() {
   return (
     <Router>
@@ -28,6 +29,7 @@ function App() {
           <Route path="/instructor-dashboard" element={<InstructorDashboard />} />
           <Route path="/admin-dashboard" element={<AdminDashboard />} />
           <Route path="/teacher-details" element={<TeacherDetails />} />
+          <Route path="/course/:courseId" element={<CourseDetails />} />
           {/* Add other routes as needed */}
         </Routes>
       </div>

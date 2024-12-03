@@ -1,136 +1,279 @@
 import React, { useState, useEffect } from 'react';
-import { Star } from 'lucide-react';
-
-// Sample courses data with city and skills fields
-const coursesData = [
-  { id: 1, name: 'React for Beginners', description: 'Learn React from scratch.', rating: 4.5, city: 'New York', skills: ['React', 'JavaScript'] },
-  { id: 2, name: 'Advanced JavaScript', description: 'Master JavaScript with advanced concepts.', rating: 4.8, city: 'San Francisco', skills: ['JavaScript', 'ES6'] },
-  { id: 3, name: 'Python for Data Science', description: 'Learn Python programming and its application in Data Science.', rating: 4.3, city: 'Chicago', skills: ['Python', 'Data Science'] },
-  { id: 4, name: 'Web Development Bootcamp', description: 'Learn full-stack web development.', rating: 4.7, city: 'New York', skills: ['HTML', 'CSS', 'JavaScript'] },
-];
+import { useNavigate } from 'react-router-dom';
 
 const StudentDashboard = () => {
-  const [courses, setCourses] = useState(coursesData);
-  const [filteredCourses, setFilteredCourses] = useState(coursesData);
-  const [profile, setProfile] = useState({
-    name: 'John Doe',
-    email: 'john.doe@example.com',
-    phone: '123-456-7890',
-    address: '123 Main St, City, Country',
-  });
-  const [ratingFilter, setRatingFilter] = useState(0); // Rating filter
-  const [cityFilter, setCityFilter] = useState('');     // City filter
-  const [skillFilter, setSkillFilter] = useState('');   // Skill filter
+  const [courses, setCourses] = useState([]);
+  const [filteredCourses, setFilteredCourses] = useState([]);
+  const [ratingFilter, setRatingFilter] = useState(0);
+  const [cityFilter, setCityFilter] = useState('');
+  const [skillFilter, setSkillFilter] = useState('');
+  const navigate = useNavigate();
 
-  // Filter courses based on rating, city, and skills
+  // Fetch courses from API
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const response = await fetch('http://localhost:3000/api/course/courses');
+        const data = await response.json();
+        if (data.success) {
+          setCourses(data.data);
+          setFilteredCourses(data.data);
+        } else {
+          console.error('Failed to fetch courses:', data.message);
+        }
+      } catch (error) {
+        console.error('Error fetching courses:', error);
+      }
+    };
+
+    fetchCourses();
+  }, []);
+
+  // Filter courses based on selected filters
   useEffect(() => {
     let filtered = courses;
 
     if (ratingFilter > 0) {
-      filtered = filtered.filter(course => course.rating >= ratingFilter);
+      filtered = filtered.filter((course) => course.rating >= ratingFilter);
     }
-
     if (cityFilter) {
-      filtered = filtered.filter(course => course.city === cityFilter);
+      filtered = filtered.filter((course) => course.city === cityFilter);
     }
-
     if (skillFilter) {
-      filtered = filtered.filter(course => course.skills.includes(skillFilter));
+      filtered = filtered.filter((course) => course.skills.includes(skillFilter));
     }
 
     setFilteredCourses(filtered);
   }, [ratingFilter, cityFilter, skillFilter, courses]);
 
-  const handleEditProfile = () => {
-    alert('Edit Profile functionality goes here!');
-  };
-
-  const handleRatingFilterChange = (e) => {
-    setRatingFilter(Number(e.target.value));
-  };
-
-  const handleCityFilterChange = (e) => {
-    setCityFilter(e.target.value);
-  };
-
-  const handleSkillFilterChange = (e) => {
-    setSkillFilter(e.target.value);
+  const handleShowDetails = (courseId) => {
+    navigate(`/course/${courseId}`); // Redirect to course details page with course ID
   };
 
   return (
-    <div className="flex min-h-screen">
-      {/* Sidebar */}
+    <div className="min-h-screen bg-gray-100">
+      <div className="max-w-7xl mx-auto px-4 py-6">
+        <h1 className="text-4xl font-bold text-gray-800 mb-6">Explore Courses</h1>
 
-      {/* Main Content */}
-      <div className="flex-1 p-6 bg-gray-100">
-        <h1 className="text-3xl font-bold mb-8">Welcome, {profile.name}!</h1>
-
-        {/* Filters Section */}
-        <div className="mb-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {/* Rating Filter */}
+        {/* Filters */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div>
-            <label className="block text-lg mb-2">Filter by Rating:</label>
-            <select 
-              className="p-2 rounded border w-full"
+            <label className="block text-lg font-semibold mb-2">Filter by Rating</label>
+            <select
+              className="w-full p-2 border rounded-md"
               value={ratingFilter}
-              onChange={handleRatingFilterChange}
+              onChange={(e) => setRatingFilter(Number(e.target.value))}
             >
               <option value="0">All Ratings</option>
               <option value="4">4+ Stars</option>
               <option value="4.5">4.5+ Stars</option>
               <option value="5">5 Stars</option>
             </select>
-          </div>
-
-          {/* City Filter */}
+          </div> 
           <div>
-            <label className="block text-lg mb-2">Filter by City:</label>
-            <select 
-              className="p-2 rounded border w-full"
-              value={cityFilter}
-              onChange={handleCityFilterChange}
-            >
-              <option value="">All Cities</option>
-              <option value="New York">New York</option>
-              <option value="San Francisco">San Francisco</option>
-              <option value="Chicago">Chicago</option>
-            </select>
-          </div>
-
-          {/* Skill Filter */}
-          <div>
-            <label className="block text-lg mb-2">Filter by Skill:</label>
-            <select 
-              className="p-2 rounded border w-full"
+            <label className="block text-lg font-semibold mb-2">Filter by Skill</label>
+            <select
+              className="w-full p-2 border rounded-md"
               value={skillFilter}
-              onChange={handleSkillFilterChange}
+              onChange={(e) => setSkillFilter(e.target.value)}
             >
               <option value="">All Skills</option>
-              <option value="React">React</option>
               <option value="JavaScript">JavaScript</option>
-              <option value="Data Science">Data Science</option>
+              <option value="React">React</option>
+              <option value="Web Development">Web Development</option>
               <option value="Python">Python</option>
-              <option value="HTML">HTML</option>
-              <option value="CSS">CSS</option>
             </select>
           </div>
         </div>
 
-        {/* Courses Section */}
-        <div id="courses" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredCourses.map(course => (
-            <div key={course.id} className="bg-white p-4 rounded-lg shadow-lg">
-              <h3 className="text-xl font-semibold mb-2">{course.name}</h3>
-              <p className="text-gray-600 mb-2">{course.description}</p>
-              <p className="text-sm text-gray-500 mb-1"><strong>City:</strong> {course.city}</p>
-              <p className="text-sm text-gray-500 mb-2"><strong>Skills:</strong> {course.skills.join(', ')}</p>
-              <div className="flex items-center">
-                <Star className="text-yellow-400" />
-                <span className="ml-1 text-sm">{course.rating} / 5</span>
+        {/* Courses */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredCourses.map((course) => (
+            <div
+              key={course._id}
+              className="
+                group 
+                perspective-1000 
+                relative 
+                transform 
+                transition-all 
+                duration-500 
+                hover:scale-105 
+                hover:z-10
+              "
+            >
+              {/* Card Background Layer */}
+              <div 
+                className="
+                  absolute 
+                  inset-0 
+                  bg-gradient-to-br 
+                  from-blue-100 
+                  to-blue-200 
+                  rounded-xl 
+                  opacity-0 
+                  group-hover:opacity-50 
+                  transition-opacity 
+                  duration-500 
+                  -z-10 
+                  transform 
+                  group-hover:rotate-6
+                "
+              />
+
+              {/* Main Card */}
+              <div
+                className="
+                  bg-white 
+                  shadow-lg 
+                  rounded-xl 
+                  p-6 
+                  relative 
+                  overflow-hidden 
+                  border-2 
+                  border-transparent 
+                  transition-all 
+                  duration-500 
+                  group-hover:border-blue-400
+                  group-hover:shadow-2xl
+                "
+              >
+                {/* Hover Overlay */}
+                <div 
+                  className="
+                    absolute 
+                    inset-0 
+                    bg-blue-500 
+                    opacity-0 
+                    group-hover:opacity-10 
+                    transition-opacity 
+                    duration-500 
+                    -z-10
+                  "
+                />
+
+                {/* Card Content */}
+                <div className="relative z-10">
+                  <h2 
+                    className="
+                      text-2xl 
+                      font-semibold 
+                      mb-2 
+                      transition-colors 
+                      duration-300 
+                      group-hover:text-blue-600
+                    "
+                  >
+                    {course.courseName}
+                  </h2>
+                  <p 
+                    className="
+                      text-gray-600 
+                      mb-4 
+                      transition-all 
+                      duration-300 
+                      group-hover:text-gray-800
+                    "
+                  >
+                    {course.description}
+                  </p>
+                  <p 
+                    className="
+                      text-gray-700 
+                      mb-2 
+                      transition-transform 
+                      duration-300 
+                      group-hover:translate-x-2
+                    "
+                  >
+                    <strong>Instructor:</strong> {course.instructorName}
+                  </p>
+                  <p 
+                    className="
+                      text-gray-700 
+                      mb-2 
+                      transition-transform 
+                      duration-300 
+                      group-hover:translate-x-2
+                    "
+                  >
+                    <strong>Price:</strong> ₹{course.price}
+                  </p>
+                  <div 
+                    className="
+                      flex 
+                      items-center 
+                      mb-2 
+                      transition-transform 
+                      duration-300 
+                      group-hover:scale-105
+                    "
+                  >
+                    <span className="text-yellow-400">&#9733;</span>
+                    <span className="ml-2">{course.rating.toFixed(1)} / 5</span>
+                  </div>        
+                  <div className="flex items-center flex-wrap">
+                    {course.skills.map((skill, index) => (
+                      <span
+                        key={index}
+                        className="
+                          bg-gray-200 
+                          text-gray-800 
+                          text-sm 
+                          px-2 
+                          py-1 
+                          rounded-full 
+                          mr-2 
+                          mb-2 
+                          transition-all 
+                          duration-300 
+                          group-hover:bg-blue-100 
+                          group-hover:text-blue-800
+                        "
+                      >
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="mt-4 flex gap-2">
+                    <button
+                      className="
+                        w-1/2 
+                        bg-blue-500 
+                        text-white 
+                        py-2 
+                        rounded 
+                        hover:bg-blue-600 
+                        transition-colors 
+                        transform 
+                        hover:scale-105 
+                        active:scale-95
+                      "
+                      onClick={() => handleShowDetails(course._id)}
+                    >
+                      Show Details
+                    </button>
+                    {!course.isEnrolled && (
+                      <button 
+                        className="
+                          w-1/2 
+                          bg-green-500 
+                          text-white 
+                          py-2 
+                          rounded 
+                          hover:bg-green-600 
+                          transition-colors 
+                          transform 
+                          hover:scale-105 
+                          active:scale-95
+                        "
+                      >
+                        Enroll Now
+                      </button>
+                    )}
+                  </div>
+                </div>
               </div>
-              <button className="mt-4 bg-blue-500 text-white py-2 px-4 rounded">
-                View Details
-              </button>
             </div>
           ))}
         </div>
