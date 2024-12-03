@@ -54,4 +54,43 @@ const addCourse = async (req, res) => {
   }
 };
 
-module.exports = { addCourse };
+// Function to get courses by teacherId
+const getCoursesByTeacherId = async (req, res) => {
+  try {
+    const { teacherId } = req.params;
+
+    // Validate teacherId
+    if (!teacherId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Teacher ID is required.',
+      });
+    }
+
+    // Find courses by teacherId
+    const courses = await Course.find({ teacherId });
+
+    // Check if courses exist
+    if (courses.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'No courses found for the given teacher ID.',
+      });
+    }
+
+    // Respond with courses
+    res.status(200).json({
+      success: true,
+      message: 'Courses retrieved successfully!',
+      data: courses,
+    });
+  } catch (error) {
+    console.error('Error retrieving courses:', error);
+    res.status(500).json({
+      success: false,
+      message: 'An error occurred while retrieving courses.',
+      error: error.message,
+    });
+  }
+};
+module.exports = { addCourse,getCoursesByTeacherId };

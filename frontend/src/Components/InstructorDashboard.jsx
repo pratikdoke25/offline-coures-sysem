@@ -26,6 +26,8 @@ const InstructorDashboard = () => {
   const [courses, setCourses] = useState([]);
   const [isAddCourseModalOpen, setIsAddCourseModalOpen] = useState(false);
   const [userData, setUserData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [newCourse, setNewCourse] = useState({
     courseName: '',
     description: '',
@@ -38,19 +40,41 @@ const InstructorDashboard = () => {
   // Effect to fetch teacher data from sessionStorage
   useEffect(() => {
     const teacherData = JSON.parse(sessionStorage.getItem('teacherData')) || {};
-    console.log('Teacher Data Retrieved from Session:', teacherData);
-
     const teacherId = teacherData.id || '';
-    const teacherEmail = teacherData.email || '';
-
-    if (!teacherId || !teacherEmail) {
-      console.error('Teacher ID or email not found in session storage.');
+  
+    if (!teacherId) {
+      setError('Teacher ID not found.');
+      setIsLoading(false);
       return;
     }
-
-    setUserData({ id: teacherId, email: teacherEmail });
+  
+    fetch(`http://localhost:3000/api/course/courses/teacher/${teacherId}`)
+      .then((response) => response.json())
+      .then((data) => {
+        console.log('API Response:', data);
+        if (data.success && Array.isArray(data.data)) {
+          setCourses(data.data); // Use data.data for courses
+          setError(null); // Clear any error
+        } else {
+          setError(data.message || 'Failed to fetch courses.');
+        }
+      })
+      .catch((error) => {
+        console.error('Fetch Error:', error);
+        setError('Error fetching courses.');
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
   }, []);
+  
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
   const handleSkillChange = (skill) => {
     setNewCourse(prev => {
       const currentSkills = prev.skills;
@@ -129,47 +153,35 @@ const InstructorDashboard = () => {
           )}
         </div>
 
-        {/* Courses Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {courses.map((course, index) => (
-            <div 
-              key={index} 
-              className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow"
-            >
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold">{course.courseName}</h2>
-                <div className="flex gap-2">
-                  <button className="text-blue-500 hover:bg-blue-100 p-1 rounded">
-                    <Edit size={16} />
-                  </button>
-                  <button className="text-red-500 hover:bg-red-100 p-1 rounded">
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-              </div>
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <BookOpen size={16} className="text-blue-500" />
-                  <span>{course.description}</span>
-                </div>
-                <div className="flex items-center gap-2">
-  <Users size={16} className="text-green-500" />
-  <span>{course.skills && Array.isArray(course.skills) ? course.skills.join(', ') : 'No skills listed'}</span>
-</div>
-
-                <div className="flex items-center gap-2">
-                  <DollarSign size={16} className="text-purple-500" />
-                  <span>${course.price.toFixed(2)}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Star size={16} className="text-yellow-500" />
-                  <span>{course.rating}/5 Rating</span>
-                </div>
-              </div>
+    {courses.length > 0 ? (
+      courses.map((course, index) => (
+        <div 
+          key={index} 
+          className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow"
+        >
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold">{course.courseName}</h2>
+            <div className="flex gap-2">
+              <button className="text-blue-500 hover:bg-blue-100 p-1 rounded">
+                Edit
+              </button>
+              <button className="text-red-500 hover:bg-red-100 p-1 rounded">
+                Delete
+              </button>
             </div>
-          ))}
+          </div>
+          <div className="space-y-3">
+            <p className="text-gray-700">{course.description || 'No description provided'}</p>
+            <p className="text-gray-500">Contact: {course.contact || 'N/A'}</p>
+            <p className="text-gray-500">Instructor: {course.instructorName || 'N/A'}</p>
+          </div>
         </div>
-
+      ))
+    ) : (
+      <p className="text-gray-700">No courses found for this instructor.</p>
+    )}
+  </div>
         {/* Add Course Modal */}
         {isAddCourseModalOpen && userData && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
