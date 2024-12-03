@@ -5,7 +5,7 @@ import LoginPage from './pages/Login';
 import HomePage from './pages/Home';
 import Footer from './pages/Footer';
 import UserRegistration from './pages/Register';
-import TeacherLoginPage from './pages/teacherLogin';
+import TeacherLoginPage from './pages/TeacherLogin';
 import TeacherRegistration from './pages/TeacherRegister';
 import AdminLoginPage from './Auth/AdminLoginPage';
 import StudentDashboard from './Components/StudentDashboard';

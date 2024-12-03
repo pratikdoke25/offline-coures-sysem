@@ -1,5 +1,12 @@
 import React, { useState } from 'react';
-import { FiMail as Mail, FiUser as User, FiLock as Lock, FiEye as Eye, FiEyeOff as EyeOff, FiPhone as Phone } from 'react-icons/fi';
+import {
+  FiMail as Mail,
+  FiUser as User,
+  FiLock as Lock,
+  FiEye as Eye,
+  FiEyeOff as EyeOff,
+  FiPhone as Phone,
+} from 'react-icons/fi';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios'; // Import Axios
@@ -11,6 +18,8 @@ const UserRegistration = () => {
     password: '',
     confirmPassword: '',
     phone: '',
+    areaOfInterest: '',
+    skills: [],
   });
   const [errors, setErrors] = useState({});
   const [passwordStrength, setPasswordStrength] = useState('');
@@ -18,6 +27,8 @@ const UserRegistration = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isPasswordFocused, setIsPasswordFocused] = useState(false);
+
+  const skillOptions = ['JavaScript', 'React', 'Node.js', 'Python', 'Java', 'C++', 'Data Analysis'];
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -27,6 +38,11 @@ const UserRegistration = () => {
       setIsPasswordFocused(true);
       evaluatePasswordStrength(value);
     }
+  };
+
+  const handleSkillChange = (e) => {
+    const selectedSkills = Array.from(e.target.selectedOptions, (option) => option.value);
+    setFormData({ ...formData, skills: selectedSkills });
   };
 
   const evaluatePasswordStrength = (password) => {
@@ -51,6 +67,8 @@ const UserRegistration = () => {
     if (!formData.password) newErrors.password = 'Password is required';
     if (formData.password !== formData.confirmPassword)
       newErrors.confirmPassword = 'Passwords do not match';
+    if (!formData.areaOfInterest) newErrors.areaOfInterest = 'Please select an area of interest';
+    if (formData.skills.length === 0) newErrors.skills = 'Please select at least one skill';
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -146,7 +164,15 @@ const UserRegistration = () => {
             </div>
           </div>
           {isPasswordFocused && formData.password && (
-            <p className={`text-sm ${passwordStrength === 'Strong' ? 'text-green-500' : passwordStrength === 'Medium' ? 'text-yellow-500' : 'text-red-500'}`}>
+            <p
+              className={`text-sm ${
+                passwordStrength === 'Strong'
+                  ? 'text-green-500'
+                  : passwordStrength === 'Medium'
+                  ? 'text-yellow-500'
+                  : 'text-red-500'
+              }`}
+            >
               Password strength: {passwordStrength}
             </p>
           )}
@@ -175,16 +201,50 @@ const UserRegistration = () => {
           {errors.confirmPassword && <p className="text-sm text-red-500">{errors.confirmPassword}</p>}
         </div>
 
-        {/* Submit Button */}
+        {/* Area of Interest Dropdown */}
+        <div className="space-y-2">
+          <label className="block text-sm font-medium">Area of Interest</label>
+          <select
+            name="areaOfInterest"
+            className={`w-full p-2 border ${errors.areaOfInterest ? 'border-red-500' : 'border-gray-300'} rounded`}
+            value={formData.areaOfInterest}
+            onChange={handleChange}
+          >
+            <option value="">Select an area</option>
+            <option value="Web Development">Web Development</option>
+            <option value="Mobile Development">Mobile Development</option>
+            <option value="Data Science">Data Science</option>
+          </select>
+          {errors.areaOfInterest && <p className="text-sm text-red-500">{errors.areaOfInterest}</p>}
+        </div>
+
+        {/* Skills Multi-Select */}
+        <div className="space-y-2">
+          <label className="block text-sm font-medium">Skills</label>
+          <select
+            name="skills"
+            multiple
+            className={`w-full p-2 border ${errors.skills ? 'border-red-500' : 'border-gray-300'} rounded`}
+            value={formData.skills}
+            onChange={handleSkillChange}
+          >
+            {skillOptions.map((skill) => (
+              <option key={skill} value={skill}>
+                {skill}
+              </option>
+            ))}
+          </select>
+          {errors.skills && <p className="text-sm text-red-500">{errors.skills}</p>}
+        </div>
+
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full py-2 bg-blue-500 text-white rounded disabled:bg-gray-400"
+          className="w-full py-2 px-4 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none"
         >
           {isLoading ? 'Registering...' : 'Register'}
         </button>
       </form>
-
       <ToastContainer />
     </div>
   );

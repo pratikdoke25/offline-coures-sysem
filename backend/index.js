@@ -6,6 +6,8 @@ const connectDB = require('./db');
 const cors = require('cors');
 const userRoutes = require('./routes/userRoutes');
 const teacherRoutes = require('./routes/teacherRoutes');
+const courseRoute=require('./routes/courseRoutes')
+
 const jwt = require('jsonwebtoken');
 
 // Load environment variables from .env file
@@ -47,7 +49,7 @@ const verifyToken = (req, res, next) => {
 // Public routes (like login) don't need token verification
 app.use('/api/users', userRoutes);
 app.use('/api/teacher', teacherRoutes);
-
+app.use('/api/course',courseRoute)
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);

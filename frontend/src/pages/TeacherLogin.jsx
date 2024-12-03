@@ -44,8 +44,9 @@ const LoginPage = () => {
 
       // Check if login was successful
       if (response.data.message === 'Login successful') {
-        // Store user data in localStorage
-        localStorage.setItem('user', JSON.stringify(response.data.user));
+        // Store user data in sessionStorage
+        sessionStorage.setItem('teacherEmail', response.data.user.email);
+        sessionStorage.setItem('teacherData', JSON.stringify(response.data.user));
 
         // Show success toast
         toast.success('Login successful!', { position: 'top-center' });
@@ -54,6 +55,10 @@ const LoginPage = () => {
         setTimeout(() => {
           navigate('/instructor-dashboard'); // Redirect to /instructor-dashboard after toast
         }, 2000); // Wait 2 seconds before redirecting (adjust as needed)
+
+        // Log user data stored in sessionStorage to console
+        console.log('User email stored in sessionStorage:', sessionStorage.getItem('teacherEmail'));
+        console.log('User data stored in sessionStorage:', JSON.parse(sessionStorage.getItem('teacherData')));
       } else {
         setLoginError('Failed to log in. Please try again.');
         toast.error('Login failed. Try again.', { position: 'top-center' });

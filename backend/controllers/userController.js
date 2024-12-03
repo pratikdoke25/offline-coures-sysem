@@ -3,9 +3,9 @@ const jwt = require('jsonwebtoken');
 
 // Register a new user
 const registerUser = async (req, res) => {
-  const { email, fullName, password, confirmPassword, phone } = req.body;
+  const { email, fullName, password, confirmPassword, phone, areaOfInterest, skills } = req.body;
 
-  if (!email || !fullName || !password || !confirmPassword || !phone) {
+  if (!email || !fullName || !password || !confirmPassword || !phone || !areaOfInterest || !skills || !skills.length) {
     return res.status(400).json({ message: 'Please fill in all fields.' });
   }
 
@@ -18,12 +18,13 @@ const registerUser = async (req, res) => {
     return res.status(400).json({ message: 'Email is already taken.' });
   }
 
-  // Create a new user without password hashing
   const newUser = new User({
     email,
     fullName,
     password,
     phone,
+    areaOfInterest,
+    skills,
   });
 
   try {
@@ -33,6 +34,7 @@ const registerUser = async (req, res) => {
     res.status(500).json({ message: 'Server error. Please try again later.' });
   }
 };
+
 
 // Login user
 const loginUser = async (req, res) => {
