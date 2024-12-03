@@ -1,21 +1,50 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 const Navbar = () => {
-  // Dummy profile data
-  const profile = {
-    name: 'John Doe',
-    email: 'johndoe@example.com',
-    phone: '+1234567890',
+  // Dummy profile data (replace it with data from sessionStorage or API)
+  const teacherDataFromSession = JSON.parse(sessionStorage.getItem('teacherData')) || {};
+  const teacherId = teacherDataFromSession.id || '';
+  const navigate = useNavigate();
+  const [teacherData, setTeacherData] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  const location = useLocation(); // Hook to get current URL
+  const handleViewProfile = () => {
+    navigate('/teacher-details'); // Navigate to the teacher details page
+  };
+  const toggleProfileDropdown = () => setShowProfileDropdown(!showProfileDropdown);
+
+  const handleLogout = () => {
+    sessionStorage.removeItem('teacherData');
+    window.location.href = "/teacher-login"; // Redirect to login page after logout
   };
 
-  const [showLoginDropdown, setShowLoginDropdown] = useState(false);
-  const [showRegisterDropdown, setShowRegisterDropdown] = useState(false);
-  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
 
-  const toggleLoginDropdown = () => setShowLoginDropdown(!showLoginDropdown);
-  const toggleRegisterDropdown = () => setShowRegisterDropdown(!showRegisterDropdown);
-  const toggleProfileDropdown = () => setShowProfileDropdown(!showProfileDropdown);
+  // Fetch teacher data based on teacherId
+  const fetchTeacherData = async () => {
+    if (teacherId) {
+      try {
+        const response = await fetch(`http://localhost:3000/api/teacher/all/${teacherId}`);
+        const data = await response.json();
+        setTeacherData(data);
+      } catch (error) {
+        console.error('Error fetching teacher data:', error);
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTeacherData();
+  }, [teacherId]);
+
+  // Check if the current path includes 'instructor-dashboard'
+  const isInstructorDashboard = location.pathname.includes('instructor-dashboard');
 
   return (
     <header className="text-gray-600 body-font">
@@ -33,7 +62,7 @@ const Navbar = () => {
           >
             <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
           </svg>
-          <span className="ml-3 text-xl">Tailblocks</span>
+          <span className="ml-3 text-xl">Navbar</span>
         </Link>
 
         <div className="flex-grow" />
@@ -59,117 +88,97 @@ const Navbar = () => {
         </div>
 
         {/* Profile Dropdown */}
-        <div className="relative ml-4">
-          <button
-            onClick={toggleProfileDropdown}
-            className="flex items-center space-x-1 bg-gray-100 border-0 py-1 px-2 focus:outline-none hover:bg-gray-200 rounded text-base transition-all duration-300 transform hover:scale-105"
-          >
-            <span className="font-semibold">{profile.name}</span>
-            <img
-              src="https://www.w3schools.com/w3images/avatar2.png"
-              alt="profile"
-              className="w-8 h-8 rounded-full"
-            />
-          </button>
-          {showProfileDropdown && (
-           <div className="absolute right-0 mt-2 w-60 bg-white border rounded shadow-lg">
-           <div className="px-4 py-3 text-gray-700 border-b">
-             <div className="flex items-center space-x-3">
-               <img
-                 src="https://www.w3schools.com/w3images/avatar2.png"
-                 alt="profile"
-                 className="w-10 h-10 rounded-full"
-               />
-               <div>
-                 <p className="font-semibold">{profile.name}</p>
-                 <p className="text-sm text-gray-500">{profile.email}</p>
-               </div>
-             </div>
-           </div>
-         
-           <div className="flex flex-col px-4 py-3 space-y-2 text-gray-700">
-             {/* User Profile */}
-             <button className="flex items-center w-full p-2 rounded-lg hover:bg-gray-100 transition">
-               <i className="fas fa-user text-indigo-500 mr-3"></i>
-               <span>View Profile</span>
-             </button>
-         
-             {/* My Orders */}
-             <button className="flex items-center w-full p-2 rounded-lg hover:bg-gray-100 transition">
-               <i className="fas fa-box text-indigo-500 mr-3"></i>
-               <span>My Orders</span>
-             </button>
-         
-             {/* Settings */}
-             <button className="flex items-center w-full p-2 rounded-lg hover:bg-gray-100 transition">
-               <i className="fas fa-cog text-indigo-500 mr-3"></i>
-               <span>Settings</span>
-             </button>
-         
-             {/* Logout */}
-             <button className="flex items-center w-full p-2 rounded-lg text-red-600 hover:bg-red-50 transition">
-               <i className="fas fa-sign-out-alt text-red-500 mr-3"></i>
-               <span>Logout</span>
-             </button>
-           </div>
-         </div>
-         
-          )}
-        </div>
+        {teacherId && teacherData ? (
+          <div className="relative ml-4">
+            <button
+              onClick={toggleProfileDropdown}
+              className="flex items-center space-x-1 bg-gray-100 border-0 py-1 px-2 focus:outline-none hover:bg-gray-200 rounded text-base transition-all duration-300 transform hover:scale-105"
+            >
+              <span className="font-semibold">{teacherData.name}</span>
+              <img
+                src={teacherData.profilePicture || "https://www.w3schools.com/w3images/avatar2.png"}
+                alt="profile"
+                className="w-8 h-8 rounded-full"
+              />
+            </button>
+            {showProfileDropdown && (
+              <div className="absolute right-0 mt-2 w-60 bg-white border rounded shadow-lg">
+                <div className="px-4 py-3 text-gray-700 border-b">
+                  <div className="flex items-center space-x-3">
+                    <img
+                      src={teacherData.profilePicture || "https://www.w3schools.com/w3images/avatar2.png"}
+                      alt="profile"
+                      className="w-10 h-10 rounded-full"
+                    />
+                    <div>
+                      <p className="font-semibold">{teacherData.name}</p>
+                      <p className="text-sm text-gray-500">{teacherData.email}</p>
+                    </div>
+                  </div>
+                </div>
 
-        {/* Login Dropdown */}
-        <div className="relative ml-4">
-          <button
-            onClick={toggleLoginDropdown}
-            className="bg-gray-100 border-0 py-1 px-2 focus:outline-none hover:bg-gray-200 rounded text-base transition-all duration-300 transform hover:scale-105"
-          >
-            Login
-            <span className="ml-1">&#9660;</span>
-          </button>
-          {showLoginDropdown && (
-            <div className="absolute right-0 mt-2 w-40 bg-white border rounded shadow-lg">
-              <Link
-                to="/login"
-                className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                <div className="flex flex-col px-4 py-3 space-y-2 text-gray-700">
+                  {/* User Profile */}
+                  <button
+                    onClick={handleViewProfile}
+                    className="flex items-center w-full p-2 rounded-lg hover:bg-gray-100 transition"
+                  >
+                    <i className="fas fa-user text-indigo-500 mr-3"></i>
+                    <span>View Profile</span>
+                  </button>
+                  {/* Logout */}
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center w-full p-2 rounded-lg text-red-600 hover:bg-red-50 transition"
+                  >
+                    <i className="fas fa-sign-out-alt text-red-500 mr-3"></i>
+                    <span>Logout</span>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        ) : !isInstructorDashboard && (
+          <>
+            {/* Login Dropdown */}
+            <div className="relative ml-4">
+              <button
+                onClick={toggleProfileDropdown}
+                className="bg-gray-100 border-0 py-1 px-2 focus:outline-none hover:bg-gray-200 rounded text-base transition-all duration-300 transform hover:scale-105"
               >
-                User Login
-              </Link>
-              <Link
-                to="/teacher-login"
-                className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-              >
-                Teacher Login
-              </Link>
+                Login
+                <span className="ml-1">&#9660;</span>
+              </button>
             </div>
-          )}
-        </div>
 
-        {/* Register Dropdown */}
-        <div className="relative ml-4">
-          <button
-            onClick={toggleRegisterDropdown}
-            className="bg-gray-100 border-0 py-1 px-2 focus:outline-none hover:bg-gray-200 rounded text-base transition-all duration-300 transform hover:scale-105"
-          >
-            Signup
-            <span className="ml-1">&#9660;</span>
-          </button>
-          {showRegisterDropdown && (
-            <div className="absolute right-0 mt-2 w-40 bg-white border rounded shadow-lg">
-              <Link
-                to="/register"
-                className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+            {/* Register Dropdown */}
+            <div className="relative ml-4">
+              <button
+                onClick={toggleProfileDropdown}
+                className="bg-gray-100 border-0 py-1 px-2 focus:outline-none hover:bg-gray-200 rounded text-base transition-all duration-300 transform hover:scale-105"
               >
-                User Register
-              </Link>
-              <Link
-                to="/teacher-register"
-                className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-              >
-                Teacher Register
-              </Link>
+                Signup
+                <span className="ml-1">&#9660;</span>
+              </button>
+              {showProfileDropdown && (
+                <div className="absolute right-0 mt-2 w-40 bg-white border rounded shadow-lg">
+                  <Link
+                    to="/register"
+                    className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                  >
+                    User Register
+                  </Link>
+                  <Link
+                    to="/teacher-register"
+                    className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                  >
+                    Teacher Register
+                  </Link>
+                </div>
+              )}
             </div>
-          )}
-        </div>
+          </>
+        )}
       </div>
     </header>
   );

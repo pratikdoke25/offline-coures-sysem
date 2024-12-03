@@ -11,7 +11,7 @@ import AdminLoginPage from './Auth/AdminLoginPage';
 import StudentDashboard from './Components/StudentDashboard';
 import InstructorDashboard from './Components/InstructorDashboard';
 import AdminDashboard from './Auth/AdminDashboard';
-
+import TeacherDetails from './Profile/TeacherDetails'
 function App() {
   return (
     <Router>
@@ -27,6 +27,7 @@ function App() {
           <Route path="/student-dashboard" element={<StudentDashboard />} />
           <Route path="/instructor-dashboard" element={<InstructorDashboard />} />
           <Route path="/admin-dashboard" element={<AdminDashboard />} />
+          <Route path="/teacher-details" element={<TeacherDetails />} />
           {/* Add other routes as needed */}
         </Routes>
       </div>

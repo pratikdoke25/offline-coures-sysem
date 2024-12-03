@@ -77,5 +77,16 @@ const loginTeacher = async (req, res) => {
     res.status(500).json({ message: 'Server error, please try again later.' });
   }
 };
-
-module.exports = { loginTeacher, registerTeacher };
+const getTeacherById = async (req, res) => {
+  try {
+    const teacher = await Teacher.findById(req.params.id);
+    if (!teacher) {
+      return res.status(404).json({ message: 'Teacher not found' });
+    }
+    res.json(teacher);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+module.exports = { loginTeacher, registerTeacher,getTeacherById};
