@@ -19,101 +19,17 @@ const StudentDashboard = () => {
   const [isEnrolled, setIsEnrolled] = useState(false);  // To track enrollment success
   const [enrollMessage, setEnrollMessage] = useState(""); // To store success message
   const [enrolledCourses, setEnrolledCourses] = useState([]);
-
-  //enrolled courese
-  useEffect(() => {
-    if (activeTab === 'enrolled') {
-        fetchEnrolledCourses();
-    }
-}, [activeTab]);
-
+  const [allCourses, setAllCourses] = useState([]);
   // Fetch courses from API
-  useEffect(() => {
-    const fetchCourses = async () => {
-      try {
-        const response = await fetch('http://localhost:3000/api/course/courses');
-        const data = await response.json();
-        if (data.success) {
-          setCourses(data.data);
-          setFilteredCourses(data.data);
-        } else {
-          console.error('Failed to fetch courses:', data.message);
-        }
-      } catch (error) {
-        console.error('Error fetching courses:', error);
-      }
-    };
-
-    fetchCourses();
-  }, []);
-
-  // Filter courses based on selected filters
-  useEffect(() => {
-    let filtered = courses;
-
-    if (ratingFilter > 0) {
-      filtered = filtered.filter((course) => course.rating >= ratingFilter);
-    }
-    if (cityFilter) {
-      filtered = filtered.filter((course) => course.city === cityFilter);
-    }
-    if (skillFilter) {
-      filtered = filtered.filter((course) =>
-        course.skills.includes(skillFilter)
-      );
-    }
-
-    setFilteredCourses(filtered);
-  }, [ratingFilter, cityFilter, skillFilter, courses]);
-
+  // Hook initialization and useEffect at the top level
   const handleShowDetails = (courseId) => {
     navigate(`/course/${courseId}`); // Redirect to course details page with course ID
   };
-
-  useEffect(() => {
-    const userId = sessionStorage.getItem('userId'); // Get userId from sessionStorage
-
-    if (userId) {
-      // Fetch user data by ID
-      fetch(`http://localhost:3000/api/users/${userId}`)
-        .then((response) => response.json())
-        .then((data) => {
-          if (data) {
-            setUserData(data);  // Set user data
-          }
-          setLoading(false);   // Stop loading
-        })
-        .catch((error) => {
-          console.error('Error fetching user data:', error);
-          setError('Failed to load user data');
-          setLoading(false);  // Stop loading in case of error
-        });
-    } else {
-      setError('User ID not found in session storage');
-      setLoading(false); // Stop loading if no userId
-    }
-  }, []);
-  // Function to handle edit
   const handleEdit = () => {
     alert('Edit functionality not implemented');
     // Implement edit logic here (e.g., show a modal with edit form)
   };
-//fetch enrolled courese
-const fetchEnrolledCourses = async () => {
-  setLoading(true);
-  try {
-      const response = await fetch(`http://localhost:3000/api/course/enrolled-courses?userId=${userId}&email=${email}`);
-      if (!response.ok) {
-          throw new Error('Failed to fetch courses');
-      }
-      const data = await response.json();
-      setEnrolledCourses(data);
-  } catch (error) {
-      console.error('Error fetching courses:', error);
-  } finally {
-      setLoading(false);
-  }
-};
+
   // Function to handle delete
   const handleDelete = () => {
     const confirmed = window.confirm('Are you sure you want to delete your profile?');
@@ -123,22 +39,9 @@ const fetchEnrolledCourses = async () => {
       // You can delete the user profile by making a DELETE request to the backend
     }
   };
- // Render loading, error, or profile data
- if (loading) {
-  return <div>Loading...</div>;
-}
-
-if (error) {
-  return <div className="text-red-500">{error}</div>;
-}
-
-//To enrool classes
-const userId = sessionStorage.getItem('userId'); // Get userId from sessionStorage
+  const userId = sessionStorage.getItem('userId'); // Get userId from sessionStorage
 const email = sessionStorage.getItem('email'); // Get email from sessionStorage
-console.log(userId);
-console.log(email);
-
-// Handle enroll button click
+  // Handle enroll button click
 const handleEnroll = async (courseId) => {
   try {
     const response = await fetch('http://localhost:3000/api/enroll', {
@@ -170,6 +73,119 @@ const handleEnroll = async (courseId) => {
     setEnrollMessage('Enrollment failed. Please try again.');
   }
 };
+  useEffect(() => {
+    const userId = sessionStorage.getItem('userId'); // Get userId from sessionStorage
+
+    if (userId) {
+      // Fetch user data by ID
+      fetch(`http://localhost:3000/api/users/${userId}`)
+        .then((response) => response.json())
+        .then((data) => {
+          if (data) {
+            setUserData(data);  // Set user data
+          }
+          setLoading(false);   // Stop loading
+        })
+        .catch((error) => {
+          console.error('Error fetching user data:', error);
+          setError('Failed to load user data');
+          setLoading(false);  // Stop loading in case of error
+        });
+    } else {
+      setError('User ID not found in session storage');
+      setLoading(false); // Stop loading if no userId
+    }
+  }, []);
+useEffect(() => {
+  const fetchCourses = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/api/course/courses');
+      const data = await response.json();
+      if (data.success) {
+        setCourses(data.data);
+        setFilteredCourses(data.data);
+      } else {
+        console.error('Failed to fetch courses:', data.message);
+      }
+    } catch (error) {
+      console.error('Error fetching courses:', error);
+    }
+  };
+
+  fetchCourses();
+}, []);
+
+useEffect(() => {
+  const userId = sessionStorage.getItem('userId'); // Get userId from sessionStorage
+
+  if (userId) {
+    // Fetch user data by ID
+    fetch(`http://localhost:3000/api/users/${userId}`)
+      .then((response) => response.json())
+      .then((data) => {
+        if (data) {
+          setUserData(data); // Set user data
+        }
+        setLoading(false); // Stop loading
+      })
+      .catch((error) => {
+        console.error('Error fetching user data:', error);
+        setError('Failed to load user data');
+        setLoading(false); // Stop loading in case of error
+      });
+  } else {
+    setError('User ID not found in session storage');
+    setLoading(false); // Stop loading if no userId
+  }
+}, []);
+
+// Correct placement of fetchEnrolledCourses
+useEffect(() => {
+  const fetchEnrolledCourses = async () => {
+    try {
+      const userEmail = sessionStorage.getItem('email'); // Retrieve email from sessionStorage
+      const userId = sessionStorage.getItem('userId'); // Retrieve userId from sessionStorage
+
+      // Fetch enrolled course data
+      const enrolledResponse = await fetch('http://localhost:3000/api/enrolled-courses');
+      const enrolledData = await enrolledResponse.json();
+
+      if (!enrolledData.success) {
+        console.error('Failed to fetch enrolled courses:', enrolledData.message);
+        return;
+      }
+
+      // Filter enrolled courses for the logged-in user
+      const userEnrolledCourses = enrolledData.data.filter(
+        (enroll) => enroll.email === userEmail && enroll.userId === userId && enroll.isEnrolled
+      );
+
+      // Fetch all courses
+      const coursesResponse = await fetch('http://localhost:3000/api/course/courses');
+      const coursesData = await coursesResponse.json();
+
+      if (!coursesData.success) {
+        console.error('Failed to fetch all courses:', coursesData.message);
+        return;
+      }
+
+      // Match enrolled courses with course details
+      const matchedCourses = userEnrolledCourses.map((enroll) =>
+        coursesData.data.find((course) => course._id === enroll.courseId)
+      );
+
+      // Set enrolled courses to state
+      setEnrolledCourses(matchedCourses.filter(Boolean)); // Filter out null matches
+    } catch (error) {
+      console.error('Error fetching courses:', error);
+    }
+  };
+
+  fetchEnrolledCourses();
+}, []);
+
+// Ensure all hooks are at the top
+
 
   return (
     <div className="min-h-screen bg-gray-100 relative font-sans">
@@ -195,37 +211,14 @@ const handleEnroll = async (courseId) => {
           >
             View Profile
           </button>
-           {/* Enrolled Courses Tab Button */}
-           <button
-                className={`w-full text-left py-2 px-4 rounded text-gray-700 hover:bg-blue-100 transition ${
-                    activeTab === 'enrolled' ? 'bg-blue-200 font-bold' : ''
-                }`}
-                onClick={() => setActiveTab('enrolled')}
-            >
-                Enrolled Courses
-            </button>
-
-            {/* Display Enrolled Courses */}
-            {activeTab === 'enrolled' && (
-                <div className="mt-4">
-                    {loading ? (
-                        <p>Loading...</p>
-                    ) : enrolledCourses.length > 0 ? (
-                        <ul>
-                            {enrolledCourses.map((course) => (
-                                <li
-                                    key={course.courseId}
-                                    className="py-2 px-4 border-b border-gray-300"
-                                >
-                                    {course.name} {/* Assuming `name` exists in course data */}
-                                </li>
-                            ))}
-                        </ul>
-                    ) : (
-                        <p>No enrolled courses found.</p>
-                    )}
-                </div>
-            )}
+          <button
+            className={`w-full text-left py-2 px-4 rounded text-gray-700 hover:bg-blue-100 transition ${
+              activeTab === 'enrolled' ? 'bg-blue-200 font-bold' : ''
+            }`}
+            onClick={() => setActiveTab('enrolled')}
+          >
+            Enrolled Courses
+          </button>
         </div>
       </div>
 
@@ -282,26 +275,30 @@ const handleEnroll = async (courseId) => {
       )}
     </div>
 
-        {activeTab === 'enrolled' && (
-          <div>
-            <h2 className="text-2xl font-bold mb-6">Enrolled Courses</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {courses
-                .filter((course) => course.isEnrolled) // Assuming enrolled courses have `isEnrolled` flag
-                .map((course) => (
-                  <div
-                    key={course._id}
-                    className="bg-white shadow-md rounded-lg p-6 hover:shadow-lg transition"
-                  >
-                    <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                      {course.courseName}
-                    </h3>
-                    <p className="text-gray-600 text-sm">{course.description}</p>
-                  </div>
-                ))}
-            </div>
+    <div>
+      {activeTab === 'enrolled' && (
+        <div>
+          <h2 className="text-2xl font-bold mb-6">Enrolled Courses</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {enrolledCourses.length > 0 ? (
+              enrolledCourses.map((course) => (
+                <div
+                  key={course._id}
+                  className="bg-white shadow-md rounded-lg p-6 hover:shadow-lg transition"
+                >
+                  <h3 className="text-lg font-semibold text-gray-800 mb-2">{course.courseName}</h3>
+                  <p className="text-gray-600 text-sm">{course.description}</p>
+                  <p className="text-gray-600 text-sm">Instructor: {course.instructorName}</p>
+                  <p className="text-gray-600 text-sm">Price: ${course.price}</p>
+                </div>
+              ))
+            ) : (
+              <p className="text-gray-600 text-center">No enrolled courses found.</p>
+            )}
           </div>
-        )}
+        </div>
+      )}
+    </div>
       </div>
     <div className="min-h-screen bg-gray-100">
       <div className="max-w-7xl mx-auto px-4 py-6">

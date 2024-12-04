@@ -41,3 +41,31 @@ exports.enrollred=async (req, res) => {
         res.status(500).json({ message: 'Error fetching courses', error });
     }
 };
+
+exports.getAllEnrollments = async (req, res) => {
+  try {
+    // Fetch all enrollments
+    const enrollments = await Enrollment.find();
+    
+    // Check if data exists
+    if (!enrollments || enrollments.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'No enrollments found.',
+      });
+    }
+
+    // Return the data
+    res.status(200).json({
+      success: true,
+      data: enrollments,
+    });
+  } catch (error) {
+    // Handle errors
+    console.error('Error fetching enrollments:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error. Please try again later.',
+    });
+  }
+};
