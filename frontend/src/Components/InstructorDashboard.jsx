@@ -4,12 +4,9 @@ import {
   BookOpen,
   Star,
   Users,
-  DollarSign,
-  Edit,
-  Trash2,
   X
 } from 'lucide-react';
-
+import { Edit, Trash2, Phone, DollarSign, Tag } from 'lucide-react';
 const SKILLS_OPTIONS = [
   'JavaScript',
   'Web Development',
@@ -141,6 +138,8 @@ const InstructorDashboard = () => {
           )}
         </div>
 
+        <div className="min-h-screen bg-gray-100 p-6">
+      <div className="container mx-auto">
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {courses.length > 0 ? (
             courses.map((course, index) => (
@@ -152,19 +151,30 @@ const InstructorDashboard = () => {
                   <h2 className="text-xl font-semibold">{course.courseName}</h2>
                   <div className="flex gap-2">
                     <button className="text-blue-500 border border-blue-500 hover:bg-blue-100 hover:text-blue-700 p-2 rounded-md transition-all duration-300">
-                      Edit
+                      <Edit size={20} className="mr-1" /> Edit
                     </button>
                     <button className="text-red-500 border border-red-500 hover:bg-red-100 hover:text-red-700 p-2 rounded-md transition-all duration-300">
-                      Delete
+                      <Trash2 size={20} className="mr-1" /> Delete
                     </button>
                   </div>
                 </div>
+
                 <div className="space-y-3">
-                  <p className="text-gray-700">{course.description || 'No description provided'}</p>
-                  <p className="text-gray-500">Contact: {course.contact || 'N/A'}</p>
-                  <p className="text-gray-500">Instructor: {course.instructorName || 'N/A'}</p>
-                  <p className="text-gray-500">Price: ${course.price || 'N/A'}</p>
-                  <p className="text-gray-500">Skills: {course.skills.join(', ') || 'N/A'}</p>
+                  <p className="text-gray-700">
+                    <strong>Description:</strong> {course.description || 'No description provided'}
+                  </p>
+                  <p className="text-gray-500">
+                    <Phone size={18} className="mr-2 inline" /> Contact: {course.contact || 'N/A'}
+                  </p>
+                  <p className="text-gray-500">
+                    <span className="font-semibold">Instructor:</span> {course.instructorName || 'N/A'}
+                  </p>
+                  <p className="text-gray-500">
+                    <DollarSign size={18} className="mr-2 inline" /> Price: ${course.price || 'N/A'}
+                  </p>
+                  <p className="text-gray-500">
+                    <Tag size={18} className="mr-2 inline" /> Skills: {course.skills.join(', ') || 'N/A'}
+                  </p>
                 </div>
               </div>
             ))
@@ -172,6 +182,8 @@ const InstructorDashboard = () => {
             <p className="text-gray-700">No courses found for this instructor.</p>
           )}
         </div>
+      </div>
+    </div>
 
         {/* Add Course Modal */}
         {isAddCourseModalOpen && userData && (
