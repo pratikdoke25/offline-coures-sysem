@@ -12,7 +12,7 @@ const StudentDashboard = () => {
   const [skillFilter, setSkillFilter] = useState('');
   const navigate = useNavigate();
   const [isSliderOpen, setIsSliderOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('');
+  const [activeTab, setActiveTab] = useState('explore');
   const [userData, setUserData] = useState(null); // To store user data
   const [loading, setLoading] = useState(true);  // To show loading state
   const [error, setError] = useState(null);      // To handle errors

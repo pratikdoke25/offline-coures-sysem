@@ -1,23 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  PlusCircle, 
-  BookOpen, 
-  Star, 
-  Users, 
-  DollarSign, 
-  Edit, 
+import {
+  PlusCircle,
+  BookOpen,
+  Star,
+  Users,
+  DollarSign,
+  Edit,
   Trash2,
-  X 
+  X
 } from 'lucide-react';
 
 const SKILLS_OPTIONS = [
-  'JavaScript', 
-  'Web Development', 
-  'Frontend Development', 
-  'React', 
-  'Node.js', 
-  'Python', 
-  'Data Science', 
+  'JavaScript',
+  'Web Development',
+  'Frontend Development',
+  'React',
+  'Node.js',
+  'Python',
+  'Data Science',
   'Machine Learning'
 ];
 
@@ -132,7 +132,7 @@ const InstructorDashboard = () => {
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-gray-800">Instructor Dashboard</h1>
           {userData && (
-            <button 
+            <button
               className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors"
               onClick={() => setIsAddCourseModalOpen(true)}
             >
@@ -144,17 +144,17 @@ const InstructorDashboard = () => {
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {courses.length > 0 ? (
             courses.map((course, index) => (
-              <div 
-                key={index} 
-                className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow"
+              <div
+                key={index}
+                className="bg-white border border-gray-300 rounded-lg shadow-lg p-6 hover:shadow-2xl hover:scale-105 transition-transform duration-300 ease-in-out transform"
               >
                 <div className="flex justify-between items-center mb-4">
                   <h2 className="text-xl font-semibold">{course.courseName}</h2>
                   <div className="flex gap-2">
-                    <button className="text-blue-500 hover:bg-blue-100 p-1 rounded">
+                    <button className="text-blue-500 border border-blue-500 hover:bg-blue-100 hover:text-blue-700 p-2 rounded-md transition-all duration-300">
                       Edit
                     </button>
-                    <button className="text-red-500 hover:bg-red-100 p-1 rounded">
+                    <button className="text-red-500 border border-red-500 hover:bg-red-100 hover:text-red-700 p-2 rounded-md transition-all duration-300">
                       Delete
                     </button>
                   </div>
@@ -163,6 +163,8 @@ const InstructorDashboard = () => {
                   <p className="text-gray-700">{course.description || 'No description provided'}</p>
                   <p className="text-gray-500">Contact: {course.contact || 'N/A'}</p>
                   <p className="text-gray-500">Instructor: {course.instructorName || 'N/A'}</p>
+                  <p className="text-gray-500">Price: ${course.price || 'N/A'}</p>
+                  <p className="text-gray-500">Skills: {course.skills.join(', ') || 'N/A'}</p>
                 </div>
               </div>
             ))
@@ -175,7 +177,7 @@ const InstructorDashboard = () => {
         {isAddCourseModalOpen && userData && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6 relative">
-              <button 
+              <button
                 className="absolute top-4 right-4 text-gray-600 hover:text-gray-900"
                 onClick={() => setIsAddCourseModalOpen(false)}
               >
@@ -185,20 +187,20 @@ const InstructorDashboard = () => {
               <form onSubmit={handleAddCourse} className="space-y-4">
                 <div>
                   <label className="block mb-2">Course Name</label>
-                  <input 
+                  <input
                     className="w-full px-3 py-2 border rounded-md"
                     value={newCourse.courseName}
                     onChange={(e) => setNewCourse({ ...newCourse, courseName: e.target.value })}
-                    required 
+                    required
                   />
                 </div>
                 <div>
                   <label className="block mb-2">Description</label>
-                  <textarea 
+                  <textarea
                     className="w-full px-3 py-2 border rounded-md"
                     value={newCourse.description}
                     onChange={(e) => setNewCourse({ ...newCourse, description: e.target.value })}
-                    required 
+                    required
                   />
                 </div>
                 <div>
@@ -208,11 +210,10 @@ const InstructorDashboard = () => {
                       <button
                         key={skill}
                         type="button"
-                        className={`px-3 py-1 rounded-full text-sm ${
-                          newCourse.skills.includes(skill) 
-                            ? 'bg-blue-500 text-white' 
+                        className={`px-3 py-1 rounded-full text-sm ${newCourse.skills.includes(skill)
+                            ? 'bg-blue-500 text-white'
                             : 'bg-gray-200 text-gray-700'
-                        }`}
+                          }`}
                         onClick={() => handleSkillChange(skill)}
                       >
                         {skill}
@@ -222,38 +223,41 @@ const InstructorDashboard = () => {
                 </div>
                 <div>
                   <label className="block mb-2">Instructor Name</label>
-                  <input 
+                  <input
                     className="w-full px-3 py-2 border rounded-md"
                     value={newCourse.instructorName}
                     onChange={(e) => setNewCourse({ ...newCourse, instructorName: e.target.value })}
-                    required 
+                    required
                   />
                 </div>
                 <div>
                   <label className="block mb-2">Price</label>
-                  <input 
+                  <input
                     className="w-full px-3 py-2 border rounded-md"
                     type="number"
                     value={newCourse.price}
                     onChange={(e) => setNewCourse({ ...newCourse, price: e.target.value })}
-                    required 
+                    required
                   />
                 </div>
                 <div>
                   <label className="block mb-2">Contact Number</label>
-                  <input 
+                  <input
                     className="w-full px-3 py-2 border rounded-md"
+                    type="text"
                     value={newCourse.contactNumber}
                     onChange={(e) => setNewCourse({ ...newCourse, contactNumber: e.target.value })}
-                    required 
+                    required
                   />
                 </div>
-                <button 
-                  type="submit" 
-                  className="w-full bg-blue-500 text-white py-2 rounded-md mt-4"
-                >
-                  Add Course
-                </button>
+                <div className="flex justify-center mt-4">
+                  <button
+                    type="submit"
+                    className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600"
+                  >
+                    Add Course
+                  </button>
+                </div>
               </form>
             </div>
           </div>
