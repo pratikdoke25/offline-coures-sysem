@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { MenuIcon } from "@heroicons/react/outline";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faBars } from "@fortawesome/free-solid-svg-icons";
 
 const StudentDashboard = () => {
   const [courses, setCourses] = useState([]);
@@ -8,6 +11,11 @@ const StudentDashboard = () => {
   const [cityFilter, setCityFilter] = useState('');
   const [skillFilter, setSkillFilter] = useState('');
   const navigate = useNavigate();
+  const [isSliderOpen, setIsSliderOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('profile');
+  const [userData, setUserData] = useState(null); // To store user data
+  const [loading, setLoading] = useState(true);  // To show loading state
+  const [error, setError] = useState(null);      // To handle errors
 
   // Fetch courses from API
   useEffect(() => {
@@ -40,7 +48,9 @@ const StudentDashboard = () => {
       filtered = filtered.filter((course) => course.city === cityFilter);
     }
     if (skillFilter) {
-      filtered = filtered.filter((course) => course.skills.includes(skillFilter));
+      filtered = filtered.filter((course) =>
+        course.skills.includes(skillFilter)
+      );
     }
 
     setFilteredCourses(filtered);
@@ -50,7 +60,161 @@ const StudentDashboard = () => {
     navigate(`/course/${courseId}`); // Redirect to course details page with course ID
   };
 
+  useEffect(() => {
+    const userId = sessionStorage.getItem('userId'); // Get userId from sessionStorage
+
+    if (userId) {
+      // Fetch user data by ID
+      fetch(`http://localhost:3000/api/users/${userId}`)
+        .then((response) => response.json())
+        .then((data) => {
+          if (data) {
+            setUserData(data);  // Set user data
+          }
+          setLoading(false);   // Stop loading
+        })
+        .catch((error) => {
+          console.error('Error fetching user data:', error);
+          setError('Failed to load user data');
+          setLoading(false);  // Stop loading in case of error
+        });
+    } else {
+      setError('User ID not found in session storage');
+      setLoading(false); // Stop loading if no userId
+    }
+  }, []);
+  // Function to handle edit
+  const handleEdit = () => {
+    alert('Edit functionality not implemented');
+    // Implement edit logic here (e.g., show a modal with edit form)
+  };
+
+  // Function to handle delete
+  const handleDelete = () => {
+    const confirmed = window.confirm('Are you sure you want to delete your profile?');
+    if (confirmed) {
+      // Call an API to delete user data
+      alert('Profile deleted');
+      // You can delete the user profile by making a DELETE request to the backend
+    }
+  };
+ // Render loading, error, or profile data
+ if (loading) {
+  return <div>Loading...</div>;
+}
+
+if (error) {
+  return <div className="text-red-500">{error}</div>;
+}
   return (
+    <div className="min-h-screen bg-gray-100 relative font-sans">
+      {/* Sidebar Slider */}
+      <div
+        className={`fixed top-0 left-0 h-full w-64 bg-white shadow-lg z-50 transform transition-transform duration-300 ${
+          isSliderOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        <button
+          className="absolute top-4 right-4 text-gray-500 hover:text-red-500 transition-colors text-xl"
+          onClick={() => setIsSliderOpen(false)}
+        >
+          ✖
+        </button>
+        <div className="p-6">
+          <h2 className="text-2xl font-semibold mb-6 text-blue-600">Menu</h2>
+          <button
+            className={`w-full text-left py-2 px-4 rounded mb-4 text-gray-700 hover:bg-blue-100 transition ${
+              activeTab === 'profile' ? 'bg-blue-200 font-bold' : ''
+            }`}
+            onClick={() => setActiveTab('profile')}
+          >
+            View Profile
+          </button>
+          <button
+            className={`w-full text-left py-2 px-4 rounded text-gray-700 hover:bg-blue-100 transition ${
+              activeTab === 'enrolled' ? 'bg-blue-200 font-bold' : ''
+            }`}
+            onClick={() => setActiveTab('enrolled')}
+          >
+            Enrolled Courses
+          </button>
+        </div>
+      </div>
+
+      {/* Header */}
+      <button
+  className="bg-white text-blue-600 px-4 py-2 rounded shadow hover:bg-gray-100 transition mx-4"
+  onClick={() => setIsSliderOpen(true)}
+>
+  <FontAwesomeIcon icon={faBars} className="h-6 w-6 text-blue-600" />
+</button>
+
+
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="flex justify-center mt-8">
+      {userData && activeTab === 'profile' && (
+        <div className="bg-white p-6 rounded-lg shadow-md w-full max-w-lg transform transition-all hover:scale-105 hover:shadow-xl">
+          <h2 className="text-2xl font-bold mb-4 text-center">Your Profile</h2>
+          <p className="text-gray-700 mb-2">
+            <strong>Name:</strong> {userData.fullName}
+          </p>
+          <p className="text-gray-700 mb-2">
+            <strong>Email:</strong> {userData.email}
+          </p>
+          <p className="text-gray-700 mb-2">
+            <strong>Phone:</strong> {userData.phone}
+          </p>
+          <p className="text-gray-700 mb-2">
+            <strong>Area of Interest:</strong> {userData.areaOfInterest}
+          </p>
+          <div className="mb-4">
+            <strong>Skills:</strong>
+            <ul className="list-disc pl-5 text-gray-700">
+              {userData.skills.map((skill, index) => (
+                <li key={index}>{skill}</li>
+              ))}
+            </ul>
+          </div>
+          <div className="flex justify-between items-center">
+            <button
+              onClick={handleEdit}
+              className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition"
+            >
+              Edit
+            </button>
+            <button
+              onClick={handleDelete}
+              className="bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 transition"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+
+        {activeTab === 'enrolled' && (
+          <div>
+            <h2 className="text-2xl font-bold mb-6">Enrolled Courses</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {courses
+                .filter((course) => course.isEnrolled) // Assuming enrolled courses have `isEnrolled` flag
+                .map((course) => (
+                  <div
+                    key={course._id}
+                    className="bg-white shadow-md rounded-lg p-6 hover:shadow-lg transition"
+                  >
+                    <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                      {course.courseName}
+                    </h3>
+                    <p className="text-gray-600 text-sm">{course.description}</p>
+                  </div>
+                ))}
+            </div>
+          </div>
+        )}
+      </div>
     <div className="min-h-screen bg-gray-100">
       <div className="max-w-7xl mx-auto px-4 py-6">
         <h1 className="text-4xl font-bold text-gray-800 mb-6">Explore Courses</h1>
@@ -58,7 +222,6 @@ const StudentDashboard = () => {
         {/* Filters */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div>
-            <label className="block text-lg font-semibold mb-2">Filter by Rating</label>
             <select
               className="w-full p-2 border rounded-md"
               value={ratingFilter}
@@ -71,7 +234,6 @@ const StudentDashboard = () => {
             </select>
           </div> 
           <div>
-            <label className="block text-lg font-semibold mb-2">Filter by Skill</label>
             <select
               className="w-full p-2 border rounded-md"
               value={skillFilter}
@@ -278,6 +440,7 @@ const StudentDashboard = () => {
           ))}
         </div>
       </div>
+    </div>
     </div>
   );
 };

@@ -26,7 +26,7 @@ const LoginPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
-
+  
     setIsLoading(true);
     setLoginError('');
     try {
@@ -37,9 +37,17 @@ const LoginPage = () => {
         },
         body: JSON.stringify(formData),
       });
-
+  
       const data = await response.json();
+      console.log(data);
+      
+      console.log(data.user.id);
+      
       if (response.ok) {
+        // Store user details in session storage
+        sessionStorage.setItem('userId', data.user.id); // Use the correct key from API response
+        sessionStorage.setItem('email', data.user.email);
+  
         toast.success('Login successful!', { position: 'top-center' });
         setTimeout(() => {
           navigate('/student-dashboard');
@@ -55,6 +63,7 @@ const LoginPage = () => {
       setIsLoading(false);
     }
   };
+  
 
   const handleChange = (e) => {
     const { name, value } = e.target;

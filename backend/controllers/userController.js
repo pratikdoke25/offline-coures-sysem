@@ -71,7 +71,25 @@ const loginUser = async (req, res) => {
   }
 };
 
+//Find user Byid
+const getUserById = async (req, res) => {
+  const { id } = req.params; // Get id from request params
+
+  try {
+    const user = await User.findById(id);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.status(200).json(user);
+  } catch (error) {
+    console.error('Error fetching user:', error);
+    res.status(500).json({ message: 'Server error. Please try again later.' });
+  }
+};
 module.exports = {
   registerUser,
   loginUser,
+  getUserById
 };

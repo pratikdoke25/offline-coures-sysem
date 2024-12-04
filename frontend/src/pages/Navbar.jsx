@@ -3,26 +3,35 @@ import { Link, useLocation } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 
 const Navbar = () => {
-  // Dummy profile data (replace it with data from sessionStorage or API)
+  // Fetch teacher or student data from sessionStorage
   const teacherDataFromSession = JSON.parse(sessionStorage.getItem('teacherData')) || {};
+  const studentDataFromSession = JSON.parse(sessionStorage.getItem('studentData')) || {};
   const teacherId = teacherDataFromSession.id || '';
+  const studentId = studentDataFromSession.id || '';
   const navigate = useNavigate();
   const [teacherData, setTeacherData] = useState({});
+  const [studentData, setStudentData] = useState({});
   const [loading, setLoading] = useState(true);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const location = useLocation(); // Hook to get current URL
+
   const handleViewProfile = () => {
-    navigate('/teacher-details'); // Navigate to the teacher details page
+    if (teacherId) {
+      navigate('/teacher-details'); // Navigate to the teacher details page
+    } else if (studentId) {
+      navigate('/student-details'); // Navigate to the student details page
+    }
   };
+
   const toggleProfileDropdown = () => setShowProfileDropdown(!showProfileDropdown);
 
   const handleLogout = () => {
     sessionStorage.removeItem('teacherData');
-    window.location.href = "/teacher-login"; // Redirect to login page after logout
+    sessionStorage.removeItem('studentData');
+    window.location.href = "/login"; // Redirect to login page after logout
   };
 
-
-  // Fetch teacher data based on teacherId
+  // Fetch teacher or student data based on their IDs
   const fetchTeacherData = async () => {
     if (teacherId) {
       try {
@@ -39,12 +48,30 @@ const Navbar = () => {
     }
   };
 
+  const fetchStudentData = async () => {
+    if (studentId) {
+      try {
+        const response = await fetch(`http://localhost:3000/api/users/${studentId}`);
+        const data = await response.json();
+        setStudentData(data);
+      } catch (error) {
+        console.error('Error fetching student data:', error);
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchTeacherData();
-  }, [teacherId]);
+    fetchStudentData();
+  }, [teacherId, studentId]);
 
-  // Check if the current path includes 'instructor-dashboard'
+  // Check if the current path includes 'instructor-dashboard' or 'student-dashboard'
   const isInstructorDashboard = location.pathname.includes('instructor-dashboard');
+  const isStudentDashboard = location.pathname.includes('student-dashboard');
 
   return (
     <header className="text-gray-600 body-font">
@@ -88,15 +115,15 @@ const Navbar = () => {
         </div>
 
         {/* Profile Dropdown */}
-        {teacherId && teacherData ? (
+        {(teacherId || studentId) ? (
           <div className="relative ml-4">
             <button
               onClick={toggleProfileDropdown}
               className="flex items-center space-x-1 bg-gray-100 border-0 py-1 px-2 focus:outline-none hover:bg-gray-200 rounded text-base transition-all duration-300 transform hover:scale-105"
             >
-              <span className="font-semibold">{teacherData.name}</span>
+              <span className="font-semibold">{teacherId ? teacherData.name : studentData.name}</span>
               <img
-                src={teacherData.profilePicture || "https://www.w3schools.com/w3images/avatar2.png"}
+                src={teacherId ? teacherData.profilePicture : studentData.profilePicture || "https://www.w3schools.com/w3images/avatar2.png"}
                 alt="profile"
                 className="w-8 h-8 rounded-full"
               />
@@ -106,19 +133,19 @@ const Navbar = () => {
                 <div className="px-4 py-3 text-gray-700 border-b">
                   <div className="flex items-center space-x-3">
                     <img
-                      src={teacherData.profilePicture || "https://www.w3schools.com/w3images/avatar2.png"}
+                      src={teacherId ? teacherData.profilePicture : studentData.profilePicture || "https://www.w3schools.com/w3images/avatar2.png"}
                       alt="profile"
                       className="w-10 h-10 rounded-full"
                     />
                     <div>
-                      <p className="font-semibold">{teacherData.name}</p>
-                      <p className="text-sm text-gray-500">{teacherData.email}</p>
+                      <p className="font-semibold">{teacherId ? teacherData.name : studentData.name}</p>
+                      <p className="text-sm text-gray-500">{teacherId ? teacherData.email : studentData.email}</p>
                     </div>
                   </div>
                 </div>
 
                 <div className="flex flex-col px-4 py-3 space-y-2 text-gray-700">
-                  {/* User Profile */}
+                  {/* View Profile */}
                   <button
                     onClick={handleViewProfile}
                     className="flex items-center w-full p-2 rounded-lg hover:bg-gray-100 transition"
@@ -138,7 +165,7 @@ const Navbar = () => {
               </div>
             )}
           </div>
-        ) : !isInstructorDashboard && (
+        ) : !isInstructorDashboard && !isStudentDashboard && (
           <>
             {/* Login Dropdown */}
             <div className="relative ml-4">
