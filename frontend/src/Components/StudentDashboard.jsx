@@ -422,41 +422,42 @@ useEffect(() => {
       )}
     </div>
       </div>
-    <div className="min-h-screen bg-gray-100">
-      <div className="max-w-7xl mx-auto px-4 py-6">
-        <h1 className="text-4xl font-bold text-gray-800 mb-6">Explore Courses</h1>
-
-        {/* Filters */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div>
-            <select
-              className="w-full p-2 border rounded-md"
-              value={ratingFilter}
-              onChange={(e) => setRatingFilter(Number(e.target.value))}
-            >
-              <option value="0">All Ratings</option>
-              <option value="4">4+ Stars</option>
-              <option value="4.5">4.5+ Stars</option>
-              <option value="5">5 Stars</option>
-            </select>
-          </div> 
-          <div>
-            <select
-              className="w-full p-2 border rounded-md"
-              value={skillFilter}
-              onChange={(e) => setSkillFilter(e.target.value)}
-            >
-              <option value="">All Skills</option>
-              <option value="JavaScript">JavaScript</option>
-              <option value="React">React</option>
-              <option value="Web Development">Web Development</option>
-              <option value="Python">Python</option>
-            </select>
-          </div>
-        </div>
+   
 
         {/* Courses */}
         {activeTab === 'explore' && (
+           <div className="min-h-screen bg-gray-100">
+           <div className="max-w-7xl mx-auto px-4 py-6">
+             <h1 className="text-4xl font-bold text-gray-800 mb-6">Explore Courses</h1>
+     
+             {/* Filters */}
+             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+               <div>
+                 <select
+                   className="w-full p-2 border rounded-md"
+                   value={ratingFilter}
+                   onChange={(e) => setRatingFilter(Number(e.target.value))}
+                 >
+                   <option value="0">All Ratings</option>
+                   <option value="4">4+ Stars</option>
+                   <option value="4.5">4.5+ Stars</option>
+                   <option value="5">5 Stars</option>
+                 </select>
+               </div> 
+               <div>
+                 <select
+                   className="w-full p-2 border rounded-md"
+                   value={skillFilter}
+                   onChange={(e) => setSkillFilter(e.target.value)}
+                 >
+                   <option value="">All Skills</option>
+                   <option value="JavaScript">JavaScript</option>
+                   <option value="React">React</option>
+                   <option value="Web Development">Web Development</option>
+                   <option value="Python">Python</option>
+                 </select>
+               </div>
+             </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredCourses.map((course) => (
             <div
@@ -637,10 +638,10 @@ useEffect(() => {
             </div>
           ))}
         </div>
+        </div>
+          </div>
         )}
       </div>
-    </div>
-    </div>
   );
 };
 
