@@ -12,10 +12,20 @@ const StudentDashboard = () => {
   const [skillFilter, setSkillFilter] = useState('');
   const navigate = useNavigate();
   const [isSliderOpen, setIsSliderOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('profile');
+  const [activeTab, setActiveTab] = useState('');
   const [userData, setUserData] = useState(null); // To store user data
   const [loading, setLoading] = useState(true);  // To show loading state
   const [error, setError] = useState(null);      // To handle errors
+  const [isEnrolled, setIsEnrolled] = useState(false);  // To track enrollment success
+  const [enrollMessage, setEnrollMessage] = useState(""); // To store success message
+  const [enrolledCourses, setEnrolledCourses] = useState([]);
+
+  //enrolled courese
+  useEffect(() => {
+    if (activeTab === 'enrolled') {
+        fetchEnrolledCourses();
+    }
+}, [activeTab]);
 
   // Fetch courses from API
   useEffect(() => {
@@ -88,7 +98,22 @@ const StudentDashboard = () => {
     alert('Edit functionality not implemented');
     // Implement edit logic here (e.g., show a modal with edit form)
   };
-
+//fetch enrolled courese
+const fetchEnrolledCourses = async () => {
+  setLoading(true);
+  try {
+      const response = await fetch(`http://localhost:3000/api/course/enrolled-courses?userId=${userId}&email=${email}`);
+      if (!response.ok) {
+          throw new Error('Failed to fetch courses');
+      }
+      const data = await response.json();
+      setEnrolledCourses(data);
+  } catch (error) {
+      console.error('Error fetching courses:', error);
+  } finally {
+      setLoading(false);
+  }
+};
   // Function to handle delete
   const handleDelete = () => {
     const confirmed = window.confirm('Are you sure you want to delete your profile?');
@@ -106,6 +131,46 @@ const StudentDashboard = () => {
 if (error) {
   return <div className="text-red-500">{error}</div>;
 }
+
+//To enrool classes
+const userId = sessionStorage.getItem('userId'); // Get userId from sessionStorage
+const email = sessionStorage.getItem('email'); // Get email from sessionStorage
+console.log(userId);
+console.log(email);
+
+// Handle enroll button click
+const handleEnroll = async (courseId) => {
+  try {
+    const response = await fetch('http://localhost:3000/api/enroll', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: email,
+        userId: userId,
+        courseId: courseId,
+      }),
+    });
+
+    const result = await response.json();
+    console.log(result);
+    
+    if (response.ok) {
+      setEnrollMessage("Successfully Enrolled!");
+      setIsEnrolled(true);
+      setTimeout(() => {
+        setEnrollMessage("");  // Hide the message after 3 seconds
+      }, 3000);
+    } else {
+      setEnrollMessage(result.message);
+    }
+  } catch (error) {
+    console.error('Error enrolling:', error);
+    setEnrollMessage('Enrollment failed. Please try again.');
+  }
+};
+
   return (
     <div className="min-h-screen bg-gray-100 relative font-sans">
       {/* Sidebar Slider */}
@@ -130,14 +195,37 @@ if (error) {
           >
             View Profile
           </button>
-          <button
-            className={`w-full text-left py-2 px-4 rounded text-gray-700 hover:bg-blue-100 transition ${
-              activeTab === 'enrolled' ? 'bg-blue-200 font-bold' : ''
-            }`}
-            onClick={() => setActiveTab('enrolled')}
-          >
-            Enrolled Courses
-          </button>
+           {/* Enrolled Courses Tab Button */}
+           <button
+                className={`w-full text-left py-2 px-4 rounded text-gray-700 hover:bg-blue-100 transition ${
+                    activeTab === 'enrolled' ? 'bg-blue-200 font-bold' : ''
+                }`}
+                onClick={() => setActiveTab('enrolled')}
+            >
+                Enrolled Courses
+            </button>
+
+            {/* Display Enrolled Courses */}
+            {activeTab === 'enrolled' && (
+                <div className="mt-4">
+                    {loading ? (
+                        <p>Loading...</p>
+                    ) : enrolledCourses.length > 0 ? (
+                        <ul>
+                            {enrolledCourses.map((course) => (
+                                <li
+                                    key={course.courseId}
+                                    className="py-2 px-4 border-b border-gray-300"
+                                >
+                                    {course.name} {/* Assuming `name` exists in course data */}
+                                </li>
+                            ))}
+                        </ul>
+                    ) : (
+                        <p>No enrolled courses found.</p>
+                    )}
+                </div>
+            )}
         </div>
       </div>
 
@@ -416,23 +504,13 @@ if (error) {
                       Show Details
                     </button>
                     {!course.isEnrolled && (
-                      <button 
-                        className="
-                          w-1/2 
-                          bg-green-500 
-                          text-white 
-                          py-2 
-                          rounded 
-                          hover:bg-green-600 
-                          transition-colors 
-                          transform 
-                          hover:scale-105 
-                          active:scale-95
-                        "
-                      >
-                        Enroll Now
-                      </button>
-                    )}
+              <button
+                className="w-1/2 bg-green-500 text-white py-2 rounded hover:bg-green-600 transition-colors transform hover:scale-105 active:scale-95"
+                onClick={() => handleEnroll(course._id)}
+              >
+                Enroll Now
+              </button>
+            )}
                   </div>
                 </div>
               </div>

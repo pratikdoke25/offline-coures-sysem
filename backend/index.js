@@ -7,7 +7,7 @@ const cors = require('cors');
 const userRoutes = require('./routes/userRoutes');
 const teacherRoutes = require('./routes/teacherRoutes');
 const courseRoute=require('./routes/courseRoutes')
-
+const enrollmentRoutes = require('./routes/enrollmentRoute');
 const jwt = require('jsonwebtoken');
 
 // Load environment variables from .env file
@@ -50,6 +50,8 @@ const verifyToken = (req, res, next) => {
 app.use('/api/users', userRoutes);
 app.use('/api/teacher', teacherRoutes);
 app.use('/api/course',courseRoute)
+// Use the enrollment routes
+app.use('/api', enrollmentRoutes);
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
