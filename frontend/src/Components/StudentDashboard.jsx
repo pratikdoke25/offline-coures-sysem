@@ -42,37 +42,43 @@ const StudentDashboard = () => {
   const userId = sessionStorage.getItem('userId'); // Get userId from sessionStorage
 const email = sessionStorage.getItem('email'); // Get email from sessionStorage
   // Handle enroll button click
-const handleEnroll = async (courseId) => {
-  try {
-    const response = await fetch('http://localhost:3000/api/enroll', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        email: email,
-        userId: userId,
-        courseId: courseId,
-      }),
-    });
-
-    const result = await response.json();
-    console.log(result);
-    
-    if (response.ok) {
-      setEnrollMessage("Successfully Enrolled!");
-      setIsEnrolled(true);
-      setTimeout(() => {
-        setEnrollMessage("");  // Hide the message after 3 seconds
-      }, 3000);
-    } else {
-      setEnrollMessage(result.message);
+  const handleEnroll = async (courseId) => {
+    try {
+      const response = await fetch('http://localhost:3000/api/enroll', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: email,
+          userId: userId,
+          courseId: courseId,
+        }),
+      });
+  
+      const result = await response.json();
+      console.log(result);
+      
+      if (response.ok) {
+        setEnrollMessage("Successfully Enrolled!");
+        setIsEnrolled(true);
+        setTimeout(() => {
+          setEnrollMessage("");  // Hide the message after 3 seconds
+        }, 3000);
+  
+        // Refresh the page after successful enrollment
+        setTimeout(() => {
+          window.location.reload();
+        }, 3000);  // Wait for the success message to disappear before refreshing
+      } else {
+        setEnrollMessage(result.message);
+      }
+    } catch (error) {
+      console.error('Error enrolling:', error);
+      setEnrollMessage('Enrollment failed. Please try again.');
     }
-  } catch (error) {
-    console.error('Error enrolling:', error);
-    setEnrollMessage('Enrollment failed. Please try again.');
-  }
-};
+  };
+  
   useEffect(() => {
     const userId = sessionStorage.getItem('userId'); // Get userId from sessionStorage
 
@@ -207,6 +213,14 @@ useEffect(() => {
             className={`w-full text-left py-2 px-4 rounded mb-4 text-gray-700 hover:bg-blue-100 transition ${
               activeTab === 'profile' ? 'bg-blue-200 font-bold' : ''
             }`}
+            onClick={() => setActiveTab('explore')}
+          >
+            Home
+          </button>
+          <button
+            className={`w-full text-left py-2 px-4 rounded mb-4 text-gray-700 hover:bg-blue-100 transition ${
+              activeTab === 'profile' ? 'bg-blue-200 font-bold' : ''
+            }`}
             onClick={() => setActiveTab('profile')}
           >
             View Profile
@@ -280,22 +294,130 @@ useEffect(() => {
         <div>
           <h2 className="text-2xl font-bold mb-6">Enrolled Courses</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {enrolledCourses.length > 0 ? (
-              enrolledCourses.map((course) => (
-                <div
-                  key={course._id}
-                  className="bg-white shadow-md rounded-lg p-6 hover:shadow-lg transition"
-                >
-                  <h3 className="text-lg font-semibold text-gray-800 mb-2">{course.courseName}</h3>
-                  <p className="text-gray-600 text-sm">{course.description}</p>
-                  <p className="text-gray-600 text-sm">Instructor: {course.instructorName}</p>
-                  <p className="text-gray-600 text-sm">Price: ${course.price}</p>
-                </div>
-              ))
-            ) : (
-              <p className="text-gray-600 text-center">No enrolled courses found.</p>
-            )}
+  {enrolledCourses.length > 0 ? (
+    enrolledCourses.map((course) => (
+      <div
+        key={course._id}
+        className="
+          group 
+          perspective-1000 
+          relative 
+          transform 
+          transition-all 
+          duration-500 
+          hover:scale-105 
+          hover:z-10
+        "
+      >
+        {/* Card Background Layer */}
+        <div 
+          className="
+            absolute 
+            inset-0 
+            bg-gradient-to-br 
+            from-blue-100 
+            to-blue-200 
+            rounded-xl 
+            opacity-0 
+            group-hover:opacity-50 
+            transition-opacity 
+            duration-500 
+            -z-10 
+            transform 
+            group-hover:rotate-6
+          "
+        />
+
+        {/* Main Card */}
+        <div
+          className="
+            bg-white 
+            shadow-lg 
+            rounded-xl 
+            p-6 
+            relative 
+            overflow-hidden 
+            border-2 
+            border-transparent 
+            transition-all 
+            duration-500 
+            group-hover:border-blue-400
+            group-hover:shadow-2xl
+          "
+        >
+          {/* Hover Overlay */}
+          <div 
+            className="
+              absolute 
+              inset-0 
+              bg-blue-500 
+              opacity-0 
+              group-hover:opacity-10 
+              transition-opacity 
+              duration-500 
+              -z-10
+            "
+          />
+
+          {/* Card Content */}
+          <div className="relative z-10">
+            <h3 
+              className="
+                text-2xl 
+                font-semibold 
+                mb-2 
+                transition-colors 
+                duration-300 
+                group-hover:text-blue-600
+              "
+            >
+              {course.courseName}
+            </h3>
+            <p 
+              className="
+                text-gray-600 
+                mb-4 
+                text-sm 
+                transition-all 
+                duration-300 
+                group-hover:text-gray-800
+              "
+            >
+              {course.description}
+            </p>
+            <p 
+              className="
+                text-gray-700 
+                text-sm 
+                mb-2 
+                transition-transform 
+                duration-300 
+                group-hover:translate-x-2
+              "
+            >
+              <strong>Instructor:</strong> {course.instructorName}
+            </p>
+            <p 
+              className="
+                text-gray-700 
+                text-sm 
+                mb-2 
+                transition-transform 
+                duration-300 
+                group-hover:translate-x-2
+              "
+            >
+              <strong>Price:</strong> ₹{course.price}
+            </p>
           </div>
+        </div>
+      </div>
+    ))
+  ) : (
+    <p className="text-gray-600 text-center">No enrolled courses found.</p>
+  )}
+</div>
+
         </div>
       )}
     </div>
@@ -334,6 +456,7 @@ useEffect(() => {
         </div>
 
         {/* Courses */}
+        {activeTab === 'explore' && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredCourses.map((course) => (
             <div
@@ -514,6 +637,7 @@ useEffect(() => {
             </div>
           ))}
         </div>
+        )}
       </div>
     </div>
     </div>
