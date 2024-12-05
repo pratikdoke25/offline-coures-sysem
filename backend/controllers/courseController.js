@@ -129,4 +129,35 @@ const getCourseById = async (req, res) => {
 };
 
 
-module.exports = { addCourse,getCoursesByTeacherId ,getAllCourses,getCourseById};
+// Update course rating
+const updateCourseRating = async (req, res) => {
+  const { courseId, newRating } = req.body;
+
+  if (!courseId || newRating == null) {
+    return res.status(400).json({ message: "Course ID and new rating are required." });
+  }
+
+  if (newRating < 0 || newRating > 5) {
+    return res.status(400).json({ message: "Rating must be between 0 and 5." });
+  }
+
+  try {
+    const course = await Course.findById(courseId);
+
+    if (!course) {
+      return res.status(404).json({ message: "Course not found." });
+    }
+
+    // Update the rating
+    course.rating = newRating;
+    await course.save();
+
+    res.status(200).json({
+      message: "Course rating updated successfully.",
+      updatedCourse: course,
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Error updating course rating.", error: err.message });
+  }
+};
+module.exports = { addCourse,getCoursesByTeacherId ,getAllCourses,getCourseById,updateCourseRating};
