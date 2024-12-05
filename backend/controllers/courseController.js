@@ -160,4 +160,26 @@ const updateCourseRating = async (req, res) => {
     res.status(500).json({ message: "Error updating course rating.", error: err.message });
   }
 };
-module.exports = { addCourse,getCoursesByTeacherId ,getAllCourses,getCourseById,updateCourseRating};
+
+const recommendationcoures= async (req, res) => {
+  const { areaOfInterest, skills } = req.body;
+
+  if (!areaOfInterest || !skills || skills.length === 0) {
+    return res.status(400).json({ message: "Invalid student data" });
+  }
+
+  try {
+    // Fetch courses that match the area of interest or skills
+    const courses = await Course.find({
+      $or: [
+        { skills: { $in: skills } },
+        { skills: areaOfInterest },
+      ],
+    }).sort({ rating: -1 }); // Sort by rating (highest first)
+
+    res.json({ recommendations: courses });
+  } catch (err) {
+    res.status(500).json({ message: "Error fetching recommendations", error: err.message });
+  }
+};
+module.exports = { addCourse,getCoursesByTeacherId ,getAllCourses,getCourseById,updateCourseRating,recommendationcoures};

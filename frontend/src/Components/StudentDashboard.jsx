@@ -10,7 +10,7 @@ const StudentDashboard = () => {
   const [ratingFilter, setRatingFilter] = useState(0);
   const [cityFilter, setCityFilter] = useState('');
   const [skillFilter, setSkillFilter] = useState('');
-
+  const [recommendedCourses, setRecommendedCourses] = useState([]);
   const navigate = useNavigate();
   const [isSliderOpen, setIsSliderOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('explore');
@@ -21,7 +21,7 @@ const StudentDashboard = () => {
   const [enrollMessage, setEnrollMessage] = useState(""); // To store success message
   const [enrolledCourses, setEnrolledCourses] = useState([]);
   const [allCourses, setAllCourses] = useState([]);
-
+  
   // Fetch courses from API
   // Hook initialization and useEffect at the top level
   const handleShowDetails = (courseId) => {
@@ -106,6 +106,37 @@ const StudentDashboard = () => {
     } catch (error) {
       console.error("Error updating rating:", error);
     }
+  };
+
+
+  // Function to filter and sort courses
+  const filterAndSortCourses = (courseList, student) => {
+    const studentSkills = student.skills || [];
+    const areaOfInterest = student.areaOfInterest || "";
+
+    const sortedCourses = courseList.map((course) => {
+      const matchingSkills = course.skills.filter((skill) =>
+        studentSkills.includes(skill)
+      );
+      const matchScore = matchingSkills.length;
+      const interestMatch = course.skills.includes(areaOfInterest) ? 1 : 0;
+
+      return {
+        ...course,
+        matchScore: matchScore + interestMatch,
+      };
+    });
+
+    // Sort by matchScore first, then by rating
+    const sortedByMatch = sortedCourses.sort((a, b) => {
+      if (b.matchScore !== a.matchScore) {
+        return b.matchScore - a.matchScore;
+      }
+      return b.rating - a.rating;
+    });
+
+    setFilteredCourses(sortedByMatch); // For the explore tab
+    setRecommendedCourses(sortedByMatch.slice(0, 5)); // Top 5 for recommendations
   };
 
   useEffect(() => {
@@ -227,7 +258,40 @@ const StudentDashboard = () => {
 
   // Ensure all hooks are at the top
 
+ // Render course cards
+ useEffect(() => {
+  if (userData && courses.length > 0) {
+    const filterAndSortCourses = (courseList, student) => {
+      const studentSkills = student.skills || [];
+      const areaOfInterest = student.areaOfInterest || "";
 
+      const sortedCourses = courseList
+        .map((course) => {
+          const matchingSkills = course.skills.filter((skill) =>
+            studentSkills.includes(skill)
+          );
+          const matchScore = matchingSkills.length;
+          const interestMatch = course.skills.includes(areaOfInterest) ? 2 : 0;
+
+          return {
+            ...course,
+            matchScore: matchScore + interestMatch,
+          };
+        })
+        .sort((a, b) => {
+          if (b.matchScore !== a.matchScore) {
+            return b.matchScore - a.matchScore;
+          }
+          return b.rating - a.rating; // Secondary sort by rating
+        });
+
+      return sortedCourses;
+    };
+
+    const filteredCourses = filterAndSortCourses(courses, userData);
+    setRecommendedCourses(filteredCourses);
+  }
+}, [userData, courses]);
   return (
     <div className="min-h-screen bg-gray-100 relative font-sans">
       {/* Sidebar Slider */}
@@ -359,7 +423,24 @@ const StudentDashboard = () => {
           )}
         </div>
       </div>
-
+      <div>
+      <h2>Recommended Courses</h2>
+      {recommendedCourses.length === 0 ? (
+        <p>No courses found matching your interests.</p>
+      ) : (
+        <ul>
+          {recommendedCourses.map((course) => (
+            <li key={course._id}>
+              <h3>{course.courseName}</h3>
+              <p>Instructor: {course.instructorName}</p>
+              <p>Rating: {course.rating}</p>
+              <p>Skills: {course.skills.join(", ")}</p>
+              <p>Price: ${course.price}</p>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
 
       {/* Courses */}
       {activeTab === 'explore' && (
@@ -579,6 +660,7 @@ const StudentDashboard = () => {
         </div>
       )}
     </div>
+    
   );
 };
 
