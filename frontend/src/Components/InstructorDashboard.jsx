@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import {
   PlusCircle,
   BookOpen,
@@ -103,6 +105,7 @@ const InstructorDashboard = () => {
       });
 
       if (response.ok) {
+        toast.success('Coures Added Succefully..!', { position: 'top-center' });
         const addedCourse = await response.json();
         setCourses([...courses, addedCourse.data]);
         setIsAddCourseModalOpen(false);
@@ -116,9 +119,11 @@ const InstructorDashboard = () => {
         });
       } else {
         console.error('Failed to add course');
+        toast.error('Fail to add Coures..!', { position: 'top-center' });
       }
     } catch (error) {
       console.error('Error adding course:', error);
+      toast.error('Fail to add Coures..!', { position: 'top-center' });
     }
   };
 
@@ -275,6 +280,7 @@ const InstructorDashboard = () => {
           </div>
         )}
       </div>
+      <ToastContainer/>
     </div>
   );
 };

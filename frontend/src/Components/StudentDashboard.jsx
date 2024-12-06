@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { MenuIcon } from "@heroicons/react/outline";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBars } from "@fortawesome/free-solid-svg-icons";
-
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 const StudentDashboard = () => {
   const [courses, setCourses] = useState([]);
   const [ratingFilter, setRatingFilter] = useState(0);
@@ -65,6 +66,7 @@ const StudentDashboard = () => {
 
       if (response.ok) {
         setEnrollMessage("Successfully Enrolled!");
+        toast.success('Successfully Enrolled!', { position: 'top-center' });
         setIsEnrolled(true);
         setTimeout(() => {
           setEnrollMessage("");  // Hide the message after 3 seconds
@@ -76,10 +78,12 @@ const StudentDashboard = () => {
         }, 3000);  // Wait for the success message to disappear before refreshing
       } else {
         setEnrollMessage(result.message);
+        toast.message('You are already enrolled in this course.', { position: 'top-center' });
       }
     } catch (error) {
       console.error('Error enrolling:', error);
       setEnrollMessage('Enrollment failed. Please try again.');
+      toast.error('You are already enrolled in this course..!', { position: 'top-center' });
     }
   };
 
@@ -94,6 +98,7 @@ const StudentDashboard = () => {
       const result = await response.json();
   
       if (response.ok) {
+        toast.success('Rating updated Succesfully..!', { position: 'top-center' });
         console.log("Rating updated:", result.updatedCourse);
         // Optionally, update the course locally in the state
         const updatedCourses = enrolledCourses.map(course =>
@@ -102,9 +107,11 @@ const StudentDashboard = () => {
         setEnrolledCourses(updatedCourses);
       } else {
         console.error(result.message);
+        toast.error('Failed to upated..!', { position: 'top-center' });
       }
     } catch (error) {
       console.error("Error updating rating:", error);
+      toast.error('Failed to upated..!', { position: 'top-center' });
     }
   };
 
@@ -930,7 +937,7 @@ const filterAndSortCourses = (courseList, student) => {
           </div>
         </div>
       )}
-
+  <ToastContainer/>
     </div>
     
   );
